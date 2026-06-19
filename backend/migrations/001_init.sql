@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS threads (
 -- ─────────────────────────────────────────────────────────────
 -- sends: each individual email (initial or follow-up) in a thread
 -- type:   initial | followup
--- status: pending_approval | approved | scheduled | sent | failed | cancelled
+-- status: pending_approval | approved | sent | failed | cancelled
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS sends (
     id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

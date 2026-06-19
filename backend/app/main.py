@@ -1,8 +1,7 @@
 """FastAPI application entrypoint.
 
-Phase 1: app skeleton + /health (used by the external cron-ping to keep a free
-host awake). Routers for recruiters, templates, sends, replies are wired in later
-phases.
+Wires the routers, CORS, and the background scheduler (started/stopped via the
+lifespan). /health is hit by an external cron-ping to keep a free host awake.
 """
 from contextlib import asynccontextmanager
 
@@ -10,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routers import health, outreach, templates
+from app.routers import health, outreach, replies, templates
 from app.services import scheduler
 
 settings = get_settings()
@@ -40,3 +39,4 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(templates.router)
 app.include_router(outreach.router)
+app.include_router(replies.router)

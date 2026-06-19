@@ -106,7 +106,7 @@ def approve_send(db: Session, send_id: int) -> None:
 def cancel_send(db: Session, send_id: int) -> None:
     db.execute(
         text("UPDATE sends SET status='cancelled' WHERE id=:id AND status IN "
-             "('pending_approval','approved','scheduled')"),
+             "('pending_approval','approved')"),
         {"id": send_id},
     )
     db.commit()
