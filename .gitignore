@@ -28,4 +28,4 @@ frontend/build/
 *.swp
 
 # Resume / personal artifacts (kept out of git)
-resume/*.pdf
+**/resume/*.pdf
