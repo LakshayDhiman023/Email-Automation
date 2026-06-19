@@ -11,15 +11,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.routers import health
+from app.services import scheduler
 
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Phase 3 will start APScheduler here and run catch-up on missed sends.
+    scheduler.start()  # starts APScheduler + runs catch-up on missed sends
     yield
-    # Phase 3 will shut the scheduler down here.
+    scheduler.shutdown()
 
 
 app = FastAPI(
