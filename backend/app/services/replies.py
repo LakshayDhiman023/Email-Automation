@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import SessionLocal
-from app.services import gmail, scheduling
+from app.services import followups, gmail, scheduling
 
 log = logging.getLogger("replies")
 _settings = get_settings()
@@ -151,27 +151,6 @@ def _set_thread_status(
 
 
 def _schedule_ooo_followup(db: Session, thread_id: int, return_date: date) -> None:
-    """Create a pending-approval follow-up timed to the recruiter's return date.
-    Reuses the original send's subject/body (a real bump message is set in Phase 6)."""
-    last = db.execute(
-        text(
-            "SELECT subject, body FROM sends WHERE thread_id=:tid "
-            "ORDER BY id DESC LIMIT 1"
-        ),
-        {"tid": thread_id},
-    ).mappings().first()
+    """Create a pending-approval follow-up timed to the recruiter's return date."""
     when = scheduling.followup_time_from(return_date)
-    db.execute(
-        text(
-            """
-            INSERT INTO sends (thread_id, type, subject, body, scheduled_at, status)
-            VALUES (:tid, 'followup', :subject, :body, :sched, 'pending_approval')
-            """
-        ),
-        {
-            "tid": thread_id,
-            "subject": last["subject"] if last else "Following up",
-            "body": "Following up on my application.",  # Phase 6: replace with real text
-            "sched": when,
-        },
-    )
+    followups.create_followup(db, thread_id, when)

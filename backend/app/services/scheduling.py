@@ -41,6 +41,24 @@ WINDOW_A = (_parse_hhmm(_settings.window_a_start), _parse_hhmm(_settings.window_
 WINDOW_B = (_parse_hhmm(_settings.window_b_start), _parse_hhmm(_settings.window_b_end))
 
 
+def now_ist() -> datetime:
+    """Current time in the configured timezone."""
+    return datetime.now(_TZ)
+
+
+def working_days_between(start: date, end: date) -> int:
+    """Count working days strictly after `start` up to and including `end`."""
+    if end <= start:
+        return 0
+    count = 0
+    d = start
+    while d < end:
+        d += timedelta(days=1)
+        if is_working_day(d):
+            count += 1
+    return count
+
+
 def is_working_day(d: date) -> bool:
     """Mon–Fri and not an Indian public holiday."""
     if d.weekday() >= 5:  # 5=Sat, 6=Sun
@@ -103,16 +121,4 @@ def followup_time_from(return_date: date) -> datetime:
     """For an out-of-office reply: schedule the follow-up on the recruiter's return
     date (rolled to the next working day if needed), window A."""
     d = return_date if is_working_day(return_date) else next_working_day(return_date)
-    return _random_dt_in_window(d, WINDOW_A)
-
-
-def followup_time_after_working_days(
-    sent_at: datetime, working_days: int | None = None
-) -> datetime:
-    """N working days after `sent_at`, window A — the default no-reply follow-up."""
-    if working_days is None:
-        working_days = _settings.followup_after_working_days
-    d = sent_at.astimezone(_TZ).date()
-    for _ in range(working_days):
-        d = next_working_day(d)
     return _random_dt_in_window(d, WINDOW_A)
