@@ -3,6 +3,7 @@ import { api } from "./api";
 import { ToastProvider } from "./components/Toast";
 import {
   IconBlock,
+  IconColumns,
   IconGrid,
   IconList,
   IconMail,
@@ -11,6 +12,7 @@ import {
   IconSettings,
 } from "./components/icons";
 import AddContact from "./pages/AddContact";
+import Board from "./pages/Board";
 import Overview from "./pages/Overview";
 import Outreach from "./pages/Outreach";
 import Replies from "./pages/Replies";
@@ -21,6 +23,7 @@ import Templates from "./pages/Templates";
 const NAV = [
   { id: "Overview", label: "Overview", Icon: IconGrid },
   { id: "Add", label: "New email", Icon: IconPlus },
+  { id: "Board", label: "Pipeline", Icon: IconColumns },
   { id: "Outreach", label: "Outreach", Icon: IconSend, badge: "pending_approval" },
   { id: "Replies", label: "Replies", Icon: IconMail, badge: "needs_review" },
   { id: "Templates", label: "Templates", Icon: IconList },
@@ -37,6 +40,7 @@ function initials(name) {
 const SUBTITLES = {
   Overview: "Where everything stands at a glance.",
   Add: "Pick a template, fill the fields, and queue the email.",
+  Board: "Every thread, laid out by where it stands.",
   Outreach: "Approvals, the scheduled queue, and your sent log.",
   Replies: "Review detected replies and label them.",
   Templates: "Your outreach templates.",
@@ -172,7 +176,10 @@ export default function App() {
 
           <main className="p-5 sm:p-8 flex-1">
             {tab === "Overview" && <Overview refreshKey={refreshKey} goTo={setTab} />}
-            {tab === "Add" && <AddContact templates={templates} onAdded={refresh} />}
+            {tab === "Add" && (
+              <AddContact templates={templates} onAdded={refresh} settings={me} />
+            )}
+            {tab === "Board" && <Board refreshKey={refreshKey} goTo={setTab} />}
             {tab === "Outreach" && (
               <Outreach refreshKey={refreshKey} onChange={refresh} stats={stats} />
             )}
