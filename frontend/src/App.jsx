@@ -5,6 +5,7 @@ import AddContact from "./pages/AddContact";
 import Overview from "./pages/Overview";
 import Outreach from "./pages/Outreach";
 import Replies from "./pages/Replies";
+import Settings from "./pages/Settings";
 import Suppression from "./pages/Suppression";
 import Templates from "./pages/Templates";
 
@@ -15,6 +16,7 @@ const NAV = [
   { id: "Replies", label: "Replies", icon: "✉", badge: "needs_review" },
   { id: "Templates", label: "Templates", icon: "▤" },
   { id: "Suppression", label: "Suppression", icon: "⊘" },
+  { id: "Settings", label: "Settings", icon: "⚙" },
 ];
 
 const SUBTITLES = {
@@ -24,6 +26,7 @@ const SUBTITLES = {
   Replies: "Review detected replies and label them.",
   Templates: "Your outreach templates.",
   Suppression: "Addresses that must never be emailed.",
+  Settings: "Timezone, send windows, and working days.",
 };
 
 export default function App() {
@@ -155,6 +158,7 @@ export default function App() {
               <Templates templates={templates} onChange={loadTemplates} />
             )}
             {tab === "Suppression" && <Suppression refreshKey={refreshKey} />}
+            {tab === "Settings" && <Settings />}
           </main>
         </div>
       </div>
