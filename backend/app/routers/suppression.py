@@ -4,8 +4,8 @@ An address here is never emailed (checked at add-contact and again at send time)
 Bounces and 'negative' reply labels add to it automatically; the user can also add
 addresses manually (e.g. someone replied "please stop").
 """
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -17,13 +17,15 @@ router = APIRouter(prefix="/suppression", tags=["suppression"])
 
 class SuppressIn(BaseModel):
     email: EmailStr
-    note: str | None = None
+    note: str | None = Field(default=None, max_length=500)
 
 
 @router.get("")
-def list_suppressions(db: Session = Depends(get_db)):
+def list_suppressions(limit: int = Query(default=500, ge=1, le=5000),
+                      db: Session = Depends(get_db)):
     rows = db.execute(
-        text("SELECT * FROM suppression_list ORDER BY created_at DESC")
+        text("SELECT * FROM suppression_list ORDER BY created_at DESC LIMIT :lim"),
+        {"lim": limit},
     ).mappings().all()
     return [dict(r) for r in rows]
 
