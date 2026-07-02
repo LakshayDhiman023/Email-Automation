@@ -22,8 +22,8 @@ def create_template(payload: TemplateCreate, db: Session = Depends(get_db)):
     row = db.execute(
         text(
             """
-            INSERT INTO templates (name, kind, subject, body)
-            VALUES (:name, :kind, :subject, :body)
+            INSERT INTO templates (name, kind, subject, body, attach_resume)
+            VALUES (:name, :kind, :subject, :body, :attach_resume)
             RETURNING *
             """
         ),
@@ -39,7 +39,8 @@ def update_template(template_id: int, payload: TemplateCreate,
     row = db.execute(
         text(
             """
-            UPDATE templates SET name=:name, kind=:kind, subject=:subject, body=:body
+            UPDATE templates SET name=:name, kind=:kind, subject=:subject, body=:body,
+                                 attach_resume=:attach_resume
             WHERE id=:id RETURNING *
             """
         ),
