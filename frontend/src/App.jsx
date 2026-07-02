@@ -140,12 +140,12 @@ export default function App() {
                 <p className="text-sm text-brand-muted mt-0.5">{SUBTITLES[tab]}</p>
               </div>
               <div className="flex items-center gap-2">
-                <a
-                  href={api.exportCsvUrl()}
+                <button
+                  onClick={() => api.downloadExportCsv().catch((e) => alert(e.message))}
                   className="text-sm font-semibold px-4 py-2 rounded-lg border border-brand-line2 text-brand-ink hover:bg-brand-panel2 transition-colors"
                 >
                   Export CSV
-                </a>
+                </button>
                 <button
                   onClick={() => setTab("Add")}
                   className="bg-brand-blue text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand-blueDark transition-colors"
