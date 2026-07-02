@@ -2,12 +2,15 @@
 
 Lets each deployment localize the app instead of being hardcoded to one region.
 """
+from pathlib import Path
+
 import pytz
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.db import get_db
 from app.services import app_settings
 
@@ -53,12 +56,18 @@ class SettingsIn(BaseModel):
         return v
 
 
+def _resume_info() -> dict:
+    """Whether a resume attachment is configured and present, for the profile widget."""
+    path = Path(get_settings().resume_path)
+    return {"resume_filename": path.name if path.exists() else None}
+
+
 @router.get("")
 def get_settings_row(db: Session = Depends(get_db)):
     row = db.execute(text("SELECT * FROM app_settings WHERE id=1")).mappings().first()
     if not row:
         raise HTTPException(404, "settings not initialized; run migration 003")
-    return dict(row)
+    return {**dict(row), **_resume_info()}
 
 
 @router.put("")
