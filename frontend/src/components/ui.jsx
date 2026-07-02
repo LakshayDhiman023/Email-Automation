@@ -139,8 +139,8 @@ export function SubTabs({ tabs, active, onChange, counts = {} }) {
 
 export function fmt(dt) {
   if (!dt) return "—";
-  return new Date(dt).toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
+  // browser's own locale/timezone — the app is not region-hardcoded
+  return new Date(dt).toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   });
