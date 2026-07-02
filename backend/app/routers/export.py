@@ -70,34 +70,40 @@ def export_outreach(token: str | None = Query(default=None),
 
 @router.get("/metrics")
 def metrics(db: Session = Depends(get_db)) -> dict:
-    """Funnel + deliverability health, computed on the fly."""
-    sent = db.execute(
-        text("SELECT count(*) FROM sends WHERE status='sent'")
-    ).scalar_one()
-    bounced = db.execute(
-        text("SELECT count(*) FROM threads WHERE status='bounced'")
-    ).scalar_one()
-    replied = db.execute(
-        text("SELECT count(*) FROM threads WHERE status IN "
-             "('replied_unlabeled','replied_positive','replied_negative','ooo')")
-    ).scalar_one()
-    suppressed = db.execute(
-        text("SELECT count(*) FROM suppression_list")
-    ).scalar_one()
-    sent_24h = db.execute(
-        text("SELECT count(*) FROM sends WHERE status='sent' "
-             "AND sent_at > now() - interval '24 hours'")
-    ).scalar_one()
+    """Funnel + deliverability health, computed on the fly.
+
+    Rates use matching units: recipients (threads) over recipients contacted, so a
+    thread with an initial + follow-up isn't double-counted in the denominator.
+    """
+    sends_row = db.execute(
+        text(
+            "SELECT count(*) FILTER (WHERE status='sent') AS sent_total, "
+            "count(*) FILTER (WHERE status='sent' AND sent_at > now() - interval '24 hours') AS sent_24h, "
+            "count(DISTINCT thread_id) FILTER (WHERE status='sent') AS threads_mailed "
+            "FROM sends"
+        )
+    ).mappings().one()
+    threads_row = db.execute(
+        text(
+            "SELECT count(*) FILTER (WHERE status='bounced') AS bounced, "
+            "count(*) FILTER (WHERE status IN ('replied_unlabeled','replied_positive',"
+            "'replied_negative','ooo')) AS replied "
+            "FROM threads"
+        )
+    ).mappings().one()
+    suppressed = db.execute(text("SELECT count(*) FROM suppression_list")).scalar_one()
 
     def pct(n: int, d: int) -> float:
         return round(n / d * 100, 1) if d else 0.0
 
-    # deliverability warning if bounce rate creeps toward the danger zone (~2-3%)
-    bounce_rate = pct(bounced, sent)
+    # recipients actually mailed = distinct threads with a sent send (bounces arrive
+    # after Gmail accepts, so bounced threads are already in this set)
+    recipients = sends_row["threads_mailed"]
+    bounce_rate = pct(threads_row["bounced"], recipients)
     return {
-        "sent_total": sent,
-        "sent_last_24h": sent_24h,
-        "reply_rate": pct(replied, sent),
+        "sent_total": sends_row["sent_total"],
+        "sent_last_24h": sends_row["sent_24h"],
+        "reply_rate": pct(threads_row["replied"], recipients),
         "bounce_rate": bounce_rate,
         "bounce_warning": bounce_rate >= 2.0,
         "suppressed_total": suppressed,
