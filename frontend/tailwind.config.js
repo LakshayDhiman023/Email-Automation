@@ -4,19 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // ~50% Naukri reference: clean light + recruitment blue, kept our identity
+        // Dropbox-inspired: electric blue on lots of white, near-black ink, hairlines
         brand: {
-          bg: "#f3f6fb", // app canvas (light grey-blue)
+          bg: "#ffffff", // app canvas (pure white, Dropbox-style)
           sidebar: "#ffffff", // white sidebar
           panel: "#ffffff", // white cards
           panel2: "#f7f9fc", // nested / hover
-          line: "#e6ebf2",
-          line2: "#dde4ee",
-          ink: "#1d2330", // near-black text
-          muted: "#6b7589", // secondary text
-          blue: "#2370b7", // Naukri-ish primary blue
-          blueDark: "#1b5a96",
-          blueSoft: "#eaf2fb",
+          line: "#e8ebee", // hairline borders
+          line2: "#dfe3e8",
+          ink: "#1e1919", // Dropbox near-black text
+          muted: "#637282", // secondary text
+          blue: "#0061fe", // Dropbox electric blue
+          blueDark: "#0050d4",
+          blueSoft: "#eef4ff", // faint blue tint for hovers/badges
           teal: "#0aa39a", // secondary accent
         },
       },
@@ -24,8 +24,9 @@ export default {
         sans: ['"Inter"', "ui-sans-serif", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        card: "0 1px 2px rgba(29,35,48,0.04), 0 6px 18px -10px rgba(29,35,48,0.12)",
-        blue: "0 8px 20px -8px rgba(35,112,183,0.45)",
+        // Dropbox is flat — very subtle lift only
+        card: "0 0 0 1px rgba(30,25,25,0.04), 0 1px 3px rgba(30,25,25,0.06)",
+        blue: "0 6px 16px -8px rgba(0,97,254,0.45)",
       },
     },
   },
