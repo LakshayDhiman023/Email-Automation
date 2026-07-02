@@ -35,3 +35,6 @@ personal/
 
 # Third-party tooling checkout (OpenHands) — not part of this app, never pushed.
 Repo/
+
+# Session context handoff notes — local only.
+CONTEXT.txt
