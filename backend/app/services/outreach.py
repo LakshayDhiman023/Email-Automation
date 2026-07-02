@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import SessionLocal
-from app.services import gmail, guards, scheduling
+from app.services import app_settings, gmail, guards, scheduling
 
 log = logging.getLogger("outreach")
 _settings = get_settings()
@@ -133,10 +133,10 @@ def add_contact(db: Session, *, name: str, company: str, email: str,
         {"rid": recruiter_id, "tid": template_id},
     ).scalar_one()
 
-    # name/company are canonical built-ins ({recruiter_name} kept as an alias for
-    # backward compatibility); extra per-send vars fill the rest
+    # name/company/signature are canonical built-ins ({recruiter_name} kept as an
+    # alias for backward compatibility); extra per-send vars fill the rest
     values = {**(variables or {}), "name": name, "recruiter_name": name,
-              "company": company}
+              "company": company, "signature": app_settings.get().signature}
     subject, body = render(tmpl["subject"], tmpl["body"], values)
     scheduled_at = scheduling.compute_send_time()
 
