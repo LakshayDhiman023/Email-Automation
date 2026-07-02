@@ -30,6 +30,9 @@ CREATE TABLE IF NOT EXISTS recruiters (
 -- ─────────────────────────────────────────────────────────────
 -- threads: one outreach conversation with a recruiter
 -- status: active | replied_unlabeled | replied_positive | replied_negative | ooo | dead
+--   ooo  = recruiter is out-of-office; follow-up rescheduled to ooo_return_date,
+--          thread stays pollable so an early return re-surfaces for review.
+--   dead = negative reply OR manually closed; frees the recruiter to be re-added.
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS threads (
     id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -45,7 +48,7 @@ CREATE TABLE IF NOT EXISTS threads (
 -- ─────────────────────────────────────────────────────────────
 -- sends: each individual email (initial or follow-up) in a thread
 -- type:   initial | followup
--- status: pending_approval | approved | sent | failed | cancelled
+-- status: pending_approval | approved | sending | sent | failed | cancelled
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS sends (
     id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
