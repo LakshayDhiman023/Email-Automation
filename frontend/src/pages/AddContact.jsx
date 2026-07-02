@@ -36,9 +36,9 @@ export default function AddContact({ templates, onAdded }) {
     setQueued(null);
   };
 
-  // recruiter_name falls back to "Hiring Manager"; job_id/job_link aren't always
-  // relevant (referrals, cold HR inbox), so they're optional too.
-  const optional = new Set(["recruiter_name", "job_id", "job_link"]);
+  // the contact-name vars fall back to a generic greeting; link/id vars aren't
+  // always relevant, so all of these are optional.
+  const optional = new Set(["name", "recruiter_name", "job_id", "job_link"]);
   const ready =
     !!tmpl && !!email && fields.every((v) => optional.has(v) || (vals[v] || "").trim());
 
@@ -50,10 +50,10 @@ export default function AddContact({ templates, onAdded }) {
   async function confirmQueue() {
     setBusy(true);
     try {
-      // recruiter_name + company are first-class; the rest go in `variables`
-      const { recruiter_name = "", company = "", ...extra } = vals;
+      // name/company are first-class ({name} or the {recruiter_name} alias); rest go in variables
+      const { name = "", recruiter_name = "", company = "", ...extra } = vals;
       const send = await api.addContact({
-        name: recruiter_name,
+        name: name || recruiter_name,
         company,
         email,
         template_id: Number(templateId),
@@ -73,7 +73,7 @@ export default function AddContact({ templates, onAdded }) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-2">
-      <Card title="1 · Recruiter details">
+      <Card title="1 · Contact details">
         <div className="grid gap-3">
           <Select
             label="Template"
@@ -110,7 +110,11 @@ export default function AddContact({ templates, onAdded }) {
               label={label(v)}
               value={vals[v] || ""}
               onChange={setVar(v)}
-              placeholder={v === "recruiter_name" ? "Mohit (or leave blank → Hiring Manager)" : ""}
+              placeholder={
+                v === "name" || v === "recruiter_name"
+                  ? "e.g. Mohit (blank → generic greeting)"
+                  : ""
+              }
             />
           ))}
 
