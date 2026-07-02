@@ -3,8 +3,9 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
 from app.core.security import require_api_token
@@ -42,11 +43,41 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
+# Interactive API docs are only served when auth is disabled (local dev). On a public
+# deployment (API_TOKEN set) they'd enumerate every endpoint for attackers (OWASP A05).
+_docs_on = not settings.api_token
+
 app = FastAPI(
-    title="Recruiter Outreach Automation Platform",
+    title="Email Outreach Automation",
     version="0.1.0",
     lifespan=lifespan,
+    docs_url="/docs" if _docs_on else None,
+    redoc_url="/redoc" if _docs_on else None,
+    openapi_url="/openapi.json" if _docs_on else None,
 )
+
+# Largest legitimate payload is a template body (~20 KB); anything near 1 MB is abuse.
+_MAX_BODY_BYTES = 1_000_000
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    """Reject oversized bodies early (OWASP API4) and add standard security headers
+    to every response (OWASP A05)."""
+    length = request.headers.get("content-length")
+    if length and length.isdigit() and int(length) > _MAX_BODY_BYTES:
+        return JSONResponse({"detail": "request body too large"}, status_code=413)
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Cache-Control", "no-store")  # API data is private
+    if request.url.scheme == "https":
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=63072000; includeSubDomains"
+        )
+    return response
+
 
 app.add_middleware(
     CORSMiddleware,
