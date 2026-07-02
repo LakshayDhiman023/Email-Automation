@@ -40,14 +40,14 @@ export function Input({ label, ...props }) {
   );
 }
 
-export function Select({ label, children, ...props }) {
+export function Select({ label, children, className = "", ...props }) {
   return (
     <label className="block">
       {label && (
         <span className="block text-sm font-medium text-brand-ink/80 mb-1.5">{label}</span>
       )}
       <select
-        className="w-full rounded-lg border border-brand-line2 bg-white px-3.5 py-2.5 text-sm text-brand-ink outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15 transition"
+        className={`w-full rounded-lg border border-brand-line2 bg-white px-3.5 py-2.5 text-sm text-brand-ink outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15 transition ${className}`}
         {...props}
       >
         {children}
