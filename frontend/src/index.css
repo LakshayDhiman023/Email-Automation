@@ -16,8 +16,9 @@ body,
 body {
   margin: 0;
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
-  color: #1d2330;
-  background: #f3f6fb;
+  color: #1e1919;
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
 }
 
 @keyframes slidein {
@@ -36,6 +37,6 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(29, 35, 48, 0.18);
+  background: rgba(30, 25, 25, 0.15);
   border-radius: 8px;
 }
