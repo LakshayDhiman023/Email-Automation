@@ -71,7 +71,7 @@ def add_contact(db: Session, *, name: str, company: str, email: str,
     if not tmpl:
         raise ValueError(f"template {template_id} not found / inactive")
 
-    name = name.strip() or "Hiring Manager"  # company-HR templates have no name
+    name = name.strip() or "there"  # generic greeting when no contact name is given
     email = email.strip().lower()
 
     if "@" not in email or "." not in email.split("@")[-1]:
@@ -133,8 +133,10 @@ def add_contact(db: Session, *, name: str, company: str, email: str,
         {"rid": recruiter_id, "tid": template_id},
     ).scalar_one()
 
-    # recruiter_name/company are canonical; extra per-application vars fill the rest
-    values = {**(variables or {}), "recruiter_name": name, "company": company}
+    # name/company are canonical built-ins ({recruiter_name} kept as an alias for
+    # backward compatibility); extra per-send vars fill the rest
+    values = {**(variables or {}), "name": name, "recruiter_name": name,
+              "company": company}
     subject, body = render(tmpl["subject"], tmpl["body"], values)
     scheduled_at = scheduling.compute_send_time()
 
