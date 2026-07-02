@@ -59,7 +59,7 @@ export default function Suppression({ refreshKey }) {
               label="Email"
               type="email"
               required
-              placeholder="recruiter@company.com"
+              placeholder="contact@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -75,7 +75,7 @@ export default function Suppression({ refreshKey }) {
           <Button type="submit">Suppress</Button>
         </form>
         <p className="mt-3 text-xs text-brand-muted">
-          Addresses here are never emailed. Bounced addresses and recruiters you label
+          Addresses here are never emailed. Bounced addresses and contacts you label
           “Negative” are added here automatically.
         </p>
       </Card>
