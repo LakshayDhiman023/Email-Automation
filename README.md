@@ -43,16 +43,46 @@ CLOUD (always-up free host)         Supabase Postgres        Gmail API (OAuth re
 ```
 backend/
   app/
-    core/        config, settings, db connection
-    models/      pydantic + table models
-    routers/     FastAPI route modules
-    services/    gmail, scheduler, templates, outreach logic
-    main.py      FastAPI app + /health
-  migrations/    SQL schema
-frontend/        React dashboard (Phase 7)
+    core/        config, db engine (pgbouncer-aware), security (API token)
+    models/      pydantic request/response schemas
+    routers/     FastAPI route modules (health, tasks, outreach, replies,
+                 templates, suppression, stats, export)
+    services/    gmail, scheduler, scheduling, outreach, replies,
+                 followups, guards (deliverability/safety)
+    main.py      FastAPI app wiring + auth + CORS + lifespan
+  migrations/    SQL schema (001_init, 002_hardening)
+  scripts/       one-off ops: gmail_authorize, seed_templates
+  tools/
+    lead_finder/ standalone companion: find a company's hiring email
+                 (NOT imported by the running app)
+frontend/
+  src/
+    pages/       one component per nav screen: Overview, AddContact,
+                 Templates, Suppression, and feature folders Outreach/ and
+                 Replies/ (each an index.jsx + its own panels)
+    components/  shared UI primitives (ui.jsx, Toast.jsx)
+    api.js       REST client (sends X-API-Token)
+    App.jsx      shell: sidebar nav + routing between pages
 docs/            plan & notes
 ```
 
+## Scheduling & free-host reality
+
+The in-process APScheduler drives work when the host is always-on. But **free hosts
+suspend idle processes**, and a suspended process runs no scheduler — so sends could
+miss their windows. To stay correct regardless, point an external cron (cron-job.org)
+at `POST /tasks/run` every few minutes: it runs exactly what the scheduler would
+(due sends, reply poll, follow-up sweep), token-guarded and idempotent. On an
+always-on host you can rely on APScheduler alone; on a free tier, drive it externally.
+
+## Security
+
+All endpoints except `/health` require an `X-API-Token` header matching `API_TOKEN`
+(the frontend sends `VITE_API_TOKEN`). Auth is disabled only when `API_TOKEN` is unset
+(local dev). Set it before any public deploy — the app can send mail from your Gmail.
+
 ## Status
 
-Phase 1 (foundation) in progress. See `docs/PLAN.md` for the full phased build order.
+See `docs/PLAN.md` for the phased build order. Foundation + outreach + replies +
+follow-ups + dashboard + hardening (caps, suppression, bounce handling, retries,
+auth) are implemented.
