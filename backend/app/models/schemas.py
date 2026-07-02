@@ -14,6 +14,7 @@ class TemplateCreate(BaseModel):
     kind: str = "generic"  # official_company | startup | generic
     subject: str
     body: str  # supports any {variable}, e.g. {recruiter_name} {company} {role}
+    attach_resume: bool = True  # attach the configured file to sends of this template
 
 
 class TemplateOut(BaseModel):
@@ -22,6 +23,7 @@ class TemplateOut(BaseModel):
     kind: str
     subject: str
     body: str
+    attach_resume: bool = True
     is_active: bool
     created_at: datetime
 
@@ -79,7 +81,15 @@ class ThreadOut(BaseModel):
     latest_send: SendOut | None = None
 
 
-# ---- Reply labeling ----
+# ---- Replies ----
+class ReplyOut(BaseModel):
+    id: int
+    thread_id: int
+    snippet: str | None
+    received_at: datetime
+    label: str | None
+
+
 class ReplyLabel(BaseModel):
     label: str = Field(pattern="^(positive|negative|out_of_office)$")
     # required only when label == "out_of_office": the recruiter's return date,
