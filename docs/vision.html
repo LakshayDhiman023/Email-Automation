@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mailflow — Product Vision</title>
+<style>
+  :root{
+    --blue:#0061FE; --blue-dark:#0057E5; --ink:#1E1919; --muted:#736C64;
+    --line:#E7E2DC; --panel:#FFFFFF; --bg:#FAF9F7; --soft:#F2EFEC;
+    --green:#0F7B45; --amber:#9A6700;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.55}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 28px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue)}
+  .pill{display:inline-block;border-radius:999px;padding:10px 22px;font-weight:600;font-size:14px;
+        text-decoration:none;transition:background .15s}
+  .pill-solid{background:var(--blue);color:#fff}
+  .pill-solid:hover{background:var(--blue-dark)}
+  .pill-ghost{border:1px solid var(--line);color:var(--ink)}
+  .pill-ghost:hover{background:var(--soft)}
+
+  header{background:var(--panel);border-bottom:1px solid var(--line)}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-weight:800;font-size:18px}
+  .logo span{color:var(--blue)}
+
+  .hero{padding:88px 0 72px;background:var(--panel)}
+  .hero h1{font-size:52px;line-height:1.08;letter-spacing:-.02em;font-weight:800;max-width:760px;margin:14px 0 18px}
+  .hero h1 em{font-style:normal;color:var(--blue)}
+  .hero p{font-size:19px;color:var(--muted);max-width:640px;margin-bottom:28px}
+
+  section{padding:64px 0}
+  h2{font-size:30px;letter-spacing:-.01em;font-weight:800;margin:8px 0 8px}
+  .lede{color:var(--muted);max-width:620px;margin-bottom:36px}
+
+  .grid{display:grid;gap:16px}
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+  .grid-2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.grid-3,.grid-2{grid-template-columns:1fr}.hero h1{font-size:38px}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .card h3{font-size:16px;font-weight:700;margin-bottom:6px}
+  .card p{font-size:14px;color:var(--muted)}
+  .card .num{font-size:12px;font-weight:700;color:var(--blue);letter-spacing:.08em}
+
+  /* roadmap */
+  .lane{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .lane-head{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .lane-head .tag{font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px}
+  .t-now{background:#E8F0FE;color:var(--blue)} .t-next{background:#FFF4DA;color:var(--amber)}
+  .t-later{background:var(--soft);color:var(--muted)} .t-done{background:#E4F3EA;color:var(--green)}
+  .lane-head strong{font-size:15px}
+  .lane ul{list-style:none;padding:14px 20px}
+  .lane li{font-size:14px;color:var(--ink);padding:5px 0 5px 24px;position:relative}
+  .lane li::before{content:"";position:absolute;left:2px;top:12px;width:8px;height:8px;border-radius:50%;
+                   background:var(--blue)}
+  .lane.done li::before{background:var(--green)}
+  .lane li.no::before{background:#C33}
+  .lane li small{display:block;color:var(--muted)}
+
+  /* compare table */
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);
+        border-radius:14px;overflow:hidden;font-size:14px}
+  th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--soft)}
+  td.yes{color:var(--green);font-weight:700} td.no{color:#B3261E;font-weight:700}
+  tr:last-child td{border-bottom:none}
+
+  .metrics{display:flex;gap:16px;flex-wrap:wrap}
+  .metric{flex:1;min-width:200px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .metric b{display:block;font-size:26px;letter-spacing:-.01em}
+  .metric span{font-size:13px;color:var(--muted)}
+
+  footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:13px;background:var(--panel)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo">✉ Mail<span>flow</span></div>
+    <a class="pill pill-ghost" href="https://github.com/Vedmeena21/Email-Automation">GitHub →</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Product vision · v0.1 → v1.0</div>
+    <h1>Outreach that's <em>yours</em>.<br/>Free, self-hosted, human-approved.</h1>
+    <p>The outreach power of a paid sales stack — without the subscription, without handing
+       your contact list to a SaaS vendor, and without ever sending an email a human didn't approve.</p>
+    <a class="pill pill-solid" href="#roadmap">See the roadmap</a>
+    <a class="pill pill-ghost" href="#principles" style="margin-left:10px">Read the principles</a>
+  </div>
+</section>
+
+<section id="principles">
+  <div class="wrap">
+    <div class="eyebrow">Principles</div>
+    <h2>Six rules that don't bend</h2>
+    <p class="lede">Every feature request is tested against these. If it breaks one, it doesn't ship.</p>
+    <div class="grid grid-3">
+      <div class="card"><div class="num">P1</div><h3>Free forever for one user</h3>
+        <p>Every dependency has a $0 tier — Supabase, Gmail API, free hosts, external cron.</p></div>
+      <div class="card"><div class="num">P2</div><h3>Self-hosted &amp; owned</h3>
+        <p>Your database, your OAuth app, your tokens. Single-tenant by design — "multi-user" means another clone.</p></div>
+      <div class="card"><div class="num">P3</div><h3>Human in the loop</h3>
+        <p>Nothing sends without explicit approval. pending → approved → sent is the heart of the product.</p></div>
+      <div class="card"><div class="num">P4</div><h3>Deliverability is sacred</h3>
+        <p>Daily cap, suppression list, cooldowns, bounce detection, sends only in the recipient's working hours.</p></div>
+      <div class="card"><div class="num">P5</div><h3>Respect the channel</h3>
+        <p>No scrape-and-spray, no tracking pixels, no ToS-violating LinkedIn/X/Instagram automation.</p></div>
+      <div class="card"><div class="num">P6</div><h3>Learning-grade code</h3>
+        <p>Readable FastAPI + React with real tests, migrations, and CI — the repo doubles as a portfolio.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="roadmap" style="background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="eyebrow">Roadmap</div>
+    <h2>From working product to platform</h2>
+    <p class="lede">v0.1 already sends, follows up, detects replies, and protects your Gmail reputation.
+       What's next is polish, intelligence, then community.</p>
+    <div class="grid grid-2">
+      <div class="lane done">
+        <div class="lane-head"><span class="tag t-done">SHIPPED</span><strong>v0.1 — the single-player loop</strong></div>
+        <ul>
+          <li>Dynamic {variable} templates with auto-generated compose forms</li>
+          <li>Approval pipeline: edit, approve, cancel, close threads</li>
+          <li>Configurable timezone, send windows, working days, holidays</li>
+          <li>Reply detection, OOO rescheduling, bounce → auto-suppression</li>
+          <li>Safety rails: 40/day cap, 30-day cooldown, hard opt-out list</li>
+          <li>Runs on sleeping free hosts (external cron drives the work)</li>
+          <li>OWASP-hardened API · 29 tests · CI · Dropbox-language UI</li>
+        </ul>
+      </div>
+      <div class="lane">
+        <div class="lane-head"><span class="tag t-now">NEAR · v0.2</span><strong>Polish the loop</strong></div>
+        <ul>
+          <li>One-command setup <small>clone → running in 15 minutes</small></li>
+          <li>Published OAuth app guide <small>stop the 7-day token expiry</small></li>
+          <li>Multi-step follow-up sequences <small>today: one follow-up max</small></li>
+          <li>Inline reply reading in the dashboard</li>
+        </ul>
+      </div>
+      <div class="lane">
+        <div class="lane-head"><span class="tag t-next">MID · v0.3</span><strong>The "wow" layer — still $0</strong></div>
+        <ul>
+          <li>AI reply drafting via local Ollama <small>drafts in your voice; still human-approved (P3)</small></li>
+          <li>Template analytics &amp; A/B compare <small>reply rate per template</small></li>
+          <li>CSV contact import with variable mapping</li>
+          <li>Daily digest of replies and pending approvals</li>
+        </ul>
+      </div>
+      <div class="lane">
+        <div class="lane-head"><span class="tag t-later">LONG · v1.0</span><strong>A platform others build on</strong></div>
+        <ul>
+          <li>Shareable "campaign packs" <small>job hunt, fundraising, user research</small></li>
+          <li>Provider abstraction <small>Outlook / SMTP alongside Gmail</small></li>
+          <li>Optional login for public deployments</li>
+          <li>One-click deploys + docs site</li>
+          <li class="no">Never: DM automation, tracking pixels, 1,000-email blasts, SaaS billing</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Positioning</div>
+    <h2>Why not just use Lemlist / Instantly / Gem?</h2>
+    <p class="lede">The category is crowded — for teams with budgets. Nobody serves the careful individual.</p>
+    <table>
+      <tr><th></th><th>Mailflow</th><th>Lemlist / Instantly</th><th>Gem / hireEZ</th></tr>
+      <tr><td>Price for one person</td><td class="yes">$0</td><td class="no">$30–$100+/mo</td><td class="no">Enterprise</td></tr>
+      <tr><td>Your data stays yours</td><td class="yes">Yes — self-hosted</td><td class="no">Vendor cloud</td><td class="no">Vendor cloud</td></tr>
+      <tr><td>Human approves every send</td><td class="yes">Always</td><td class="no">Optional</td><td class="no">Optional</td></tr>
+      <tr><td>Built-in deliverability guardrails</td><td class="yes">Default on</td><td>Paid add-ons</td><td>Team policies</td></tr>
+      <tr><td>Readable, forkable codebase</td><td class="yes">The point</td><td class="no">Closed</td><td class="no">Closed</td></tr>
+    </table>
+  </div>
+</section>
+
+<section style="background:var(--panel);border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="eyebrow">Success metrics</div>
+    <h2>What we measure</h2>
+    <p class="lede">Reply rate is first-class. Sent volume never is.</p>
+    <div class="metrics">
+      <div class="metric"><b>≤ 15 min</b><span>from clone to first approved email, at $0</span></div>
+      <div class="metric"><b>Reply rate</b><span>the headline number on the dashboard</span></div>
+      <div class="metric"><b>0</b><span>Gmail suspensions for users on default guardrails</span></div>
+      <div class="metric"><b>Forks</b><span>cited as a reference FastAPI + React project</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Mailflow · vision v1 · July 2026 · github.com/Vedmeena21/Email-Automation</div>
+</footer>
+
+</body>
+</html>
