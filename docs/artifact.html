@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mailflow — UI/UX Artifact</title>
+<style>
+  :root{
+    --bg:#ffffff; --sidebar:#ffffff; --panel:#ffffff; --panel2:#f7f9fc;
+    --line:#e8ebee; --line2:#dfe3e8; --ink:#1e1919; --muted:#637282;
+    --blue:#0061fe; --blueDark:#0050d4; --blueSoft:#eef4ff; --teal:#0aa39a;
+    --amber-bg:#fff8e6; --amber-fg:#9a6700; --green-bg:#e9f9f1; --green-fg:#0f7b45;
+    --red-bg:#fdecec; --red-fg:#b3261e; --sky-bg:#eaf6fd; --sky-fg:#0369a1;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       background:#f4f2ef;color:var(--ink);line-height:1.5}
+  .page{max-width:1180px;margin:0 auto;padding:40px 24px 100px}
+
+  /* meta header — clearly NOT the app itself */
+  .meta{background:var(--ink);color:#fff}
+  .meta-inner{max-width:1180px;margin:0 auto;padding:22px 24px;display:flex;
+              align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .meta h1{font-size:16px;font-weight:800}
+  .meta h1 span{color:#7fb0ff}
+  .meta p{font-size:12.5px;color:#c7c2ba;margin-top:2px}
+  .status{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+           background:#3a3530;color:#f0d78a;border-radius:999px;padding:4px 12px}
+
+  .section{margin-top:52px}
+  .section:first-child{margin-top:36px}
+  .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue)}
+  h2{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:6px 0 4px}
+  .lede{color:var(--muted);font-size:14px;max-width:680px;margin-bottom:22px}
+
+  /* the "frame" simulating a browser/app window around each mock */
+  .frame{background:#fff;border:1px solid var(--line2);border-radius:16px;overflow:hidden;
+         box-shadow:0 1px 3px rgba(30,25,25,.06), 0 12px 32px -18px rgba(30,25,25,.18)}
+  .frame-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;background:#f6f5f3;
+             border-bottom:1px solid var(--line)}
+  .dot{width:9px;height:9px;border-radius:50%;background:#ddd8d0}
+  .frame-bar .path{margin-left:10px;font-size:11.5px;color:#9b9489;font-family:ui-monospace,monospace}
+
+  .app-shell{display:flex;min-height:560px}
+  .app-sidebar{width:190px;flex-shrink:0;border-right:1px solid var(--line);padding:18px 12px;background:#fff}
+  .brand-mark{font-weight:800;font-size:15px;padding:6px 10px 16px}
+  .brand-mark span{color:var(--blue)}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;
+             font-size:13px;font-weight:600;color:var(--muted);margin-bottom:2px}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0}
+  .nav-item.active{background:var(--blueSoft);color:var(--blue)}
+  .nav-badge{margin-left:auto;background:var(--blue);color:#fff;font-size:9.5px;font-weight:800;
+             border-radius:999px;min-width:16px;height:16px;display:inline-flex;align-items:center;
+             justify-content:center;padding:0 4px}
+
+  .app-main{flex:1;min-width:0;padding:22px 26px;background:#fff}
+  .app-topbar h3{font-size:19px;font-weight:800}
+  .app-topbar p{font-size:12.5px;color:var(--muted);margin-top:2px;margin-bottom:20px}
+
+  /* callouts pointing at WHY a change matters */
+  .callouts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  @media(max-width:900px){.callouts{grid-template-columns:1fr}}
+  .callout{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .callout b{display:block;font-size:12.5px;font-weight:800;margin-bottom:3px}
+  .callout span{font-size:12.5px;color:var(--muted)}
+  .callout.before b{color:var(--red-fg)} .callout.after b{color:var(--green-fg)}
+
+  /* --- Kanban mock --- */
+  .board{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start}
+  .col{background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .col-head{display:flex;align-items:center;gap:7px;padding:10px 12px;font-size:12px;font-weight:700}
+  .col-head .n{margin-left:auto;color:var(--muted);font-weight:700}
+  .swatch{width:7px;height:7px;border-radius:50%}
+  .card-t{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin:0 8px 8px}
+  .card-t .top{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}
+  .card-t .co{font-size:12.5px;font-weight:700}
+  .card-t .who{font-size:11px;color:var(--muted);margin-top:1px}
+  .card-t .sub{font-size:11px;color:var(--muted);margin-top:7px;
+               overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card-t .when{font-size:10px;color:#9a978f;margin-top:5px}
+  .chip{font-size:9px;font-weight:800;border-radius:999px;padding:2px 7px;white-space:nowrap}
+  .chip.pos{background:var(--green-bg);color:var(--green-fg)}
+  .chip.neg{background:var(--red-bg);color:var(--red-fg)}
+  .chip.rev{background:var(--amber-bg);color:var(--amber-fg)}
+  .chip.ooo{background:var(--sky-bg);color:var(--sky-fg)}
+  .col-empty{font-size:11px;color:#a39d93;text-align:center;padding:18px 0}
+
+  /* --- Compose preview mock --- */
+  .compose-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:820px){.compose-grid{grid-template-columns:1fr}}
+  .field{margin-bottom:11px}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
+  .field .box{border:1px solid var(--line2);border-radius:9px;padding:8px 11px;font-size:13px;background:#fff}
+  .field .box.filled{color:var(--ink)}
+  .field .box.dim{color:#b7b1a7}
+  .card-panel{border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card-panel .title{font-size:12.5px;font-weight:800;color:var(--muted);letter-spacing:.03em;
+                      text-transform:uppercase;margin-bottom:12px}
+  .preview-box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .preview-box .k{font-size:10.5px;color:var(--muted);margin-top:9px}
+  .preview-box .k:first-child{margin-top:0}
+  .preview-box .v{font-size:13px;margin-top:1px}
+  .preview-box .body{font-size:12.5px;line-height:1.6;white-space:pre-wrap;color:var(--ink)}
+  .strike-line{position:relative;color:#c2bcb2}
+  .strike-line .tag{position:absolute;right:0;top:0;font-size:9px;font-weight:800;background:var(--red-bg);
+                     color:var(--red-fg);border-radius:999px;padding:1px 7px}
+  .warn{margin-top:10px;background:var(--amber-bg);color:var(--amber-fg);border-radius:8px;
+        padding:8px 11px;font-size:12px;font-weight:600}
+  .btn{display:inline-block;margin-top:12px;background:var(--blue);color:#fff;font-size:13px;
+       font-weight:700;border-radius:8px;padding:9px 18px}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+  footer{text-align:center;color:#a39d93;font-size:12px;padding:30px 0 10px}
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <div class="meta-inner">
+    <div>
+      <h1>✉ Mail<span>flow</span> — UI/UX Artifact</h1>
+      <p>Mockups for review before implementation. Not the running app.</p>
+    </div>
+    <div class="status">Draft · awaiting sign-off</div>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="section">
+    <div class="eyebrow">Feature 01 · shipped this pass</div>
+    <h2>Pipeline board — a kanban of every thread</h2>
+    <p class="lede">Right now the dashboard is three separate lists (Approvals / Scheduled / Sent) plus a
+       Replies tab. There's no single view of "where does everything stand right now." This adds one
+       read-only board, bucketed by lifecycle stage.</p>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="path">mailflow.local — Pipeline</span>
+      </div>
+      <div class="app-shell">
+        <div class="app-sidebar">
+          <div class="brand-mark">✉ Mail<span>flow</span></div>
+          <div class="nav-item">⊞ Overview</div>
+          <div class="nav-item">＋ New email</div>
+          <div class="nav-item active">▥ Pipeline</div>
+          <div class="nav-item">↗ Outreach <span class="nav-badge">3</span></div>
+          <div class="nav-item">✉ Replies <span class="nav-badge">1</span></div>
+          <div class="nav-item">≡ Templates</div>
+          <div class="nav-item">⦸ Suppression</div>
+          <div class="nav-item">⚙ Settings</div>
+        </div>
+        <div class="app-main">
+          <div class="app-topbar">
+            <h3>Pipeline</h3>
+            <p>Every thread, laid out by where it stands.</p>
+          </div>
+
+          <div class="board">
+            <div class="col">
+              <div class="col-head"><span class="swatch" style="background:#f6b93b"></span>Pending approval<span class="n">2</span></div>
+              <div class="card-t">
+                <div class="top"><span class="co">Northwind Labs</span></div>
+                <div class="who">Ananya · ananya@northwind.io</div>
+                <div class="sub">Application — Backend Engineer role</div>
+                <div class="when">Created 2h ago</div>
+              </div>
+              <div class="card-t">
+                <div class="top"><span class="co">Fenwick &amp; Co</span></div>
+                <div class="who">there · hr@fenwick.com</div>
+                <div class="sub">General outreach</div>
+                <div class="when">Created yesterday</div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="col-head"><span class="swatch" style="background:var(--blue)"></span>Scheduled<span class="n">1</span></div>
+              <div class="card-t">
+                <div class="top"><span class="co">Solace Systems</span></div>
+                <div class="who">Marcus · marcus@solace.dev</div>
+                <div class="sub">Referral request</div>
+                <div class="when">Scheduled tomorrow, 9:15 AM</div>
+              </div>
+              <div class="col-empty">Nothing else queued</div>
+            </div>
+
+            <div class="col">
+              <div class="col-head"><span class="swatch" style="background:#38bdf8"></span>Awaiting reply<span class="n">3</span></div>
+              <div class="card-t">
+                <div class="top"><span class="co">Iris Health</span><span class="chip pos" style="visibility:hidden">x</span></div>
+                <div class="who">Priya · priya@irishealth.co</div>
+                <div class="sub">Sent 4 days ago</div>
+                <div class="when">Sent Jun 28</div>
+              </div>
+              <div class="card-t">
+                <div class="top"><span class="co">Bramble Data</span><span class="chip neg" style="background:var(--red-bg);color:var(--red-fg)">Send failed</span></div>
+                <div class="who">no-reply@bramble.io</div>
+                <div class="sub">↩ Following up — still interested?</div>
+                <div class="when">Attempt failed Jun 30</div>
+              </div>
+              <div class="card-t">
+                <div class="top"><span class="co">Vantage Point</span></div>
+                <div class="who">there · jobs@vantage.pt</div>
+                <div class="sub">Application — Platform role</div>
+                <div class="when">Sent Jun 25</div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="col-head"><span class="swatch" style="background:var(--green-fg)"></span>Replied<span class="n">2</span></div>
+              <div class="card-t">
+                <div class="top"><span class="co">Keystone AI</span><span class="chip pos">Positive</span></div>
+                <div class="who">Devika · devika@keystone.ai</div>
+                <div class="sub">Interview scheduling</div>
+                <div class="when">Replied Jun 29</div>
+              </div>
+              <div class="card-t">
+                <div class="top"><span class="co">Orbital Freight</span><span class="chip ooo">Out of office</span></div>
+                <div class="who">james@orbitalfreight.com</div>
+                <div class="sub">Back on Jul 10 — follow-up paused</div>
+                <div class="when">Replied Jun 27</div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="col-head"><span class="swatch" style="background:#d8d3ca"></span>Closed<span class="n">1</span></div>
+              <div class="card-t">
+                <div class="top"><span class="co">Redwood Retail</span><span class="chip neg">Negative</span></div>
+                <div class="who">hiring@redwoodretail.com</div>
+                <div class="sub">Marked negative — thread closed</div>
+                <div class="when">Closed Jun 22</div>
+              </div>
+              <div class="col-empty">1 of 1 shown</div>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span><i style="background:#f6b93b"></i>Awaiting your action</span>
+            <span><i style="background:var(--blue)"></i>Scheduler will send it</span>
+            <span><i style="background:#38bdf8"></i>Out, waiting on them</span>
+            <span><i style="background:var(--green-fg)"></i>They wrote back</span>
+            <span><i style="background:#d8d3ca"></i>Done, no action left</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout before"><b>Before</b><span>No single view of "where does everything stand" — had to check 3 tabs.</span></div>
+      <div class="callout after"><b>After</b><span>One glance shows what needs you vs. what's just waiting.</span></div>
+      <div class="callout"><b>Interaction</b><span>Read-only — clicking a card jumps to the tab where the real action (approve/label) lives. Never bypasses human approval.</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Feature 02 · shipped this pass</div>
+    <h2>Compose preview — now byte-for-byte what actually sends</h2>
+    <p class="lede">The old preview left <code>{signature}</code> as a raw placeholder and kept lines the
+       real send would silently drop. This closes that gap: the preview runs the exact same substitution
+       logic as the backend.</p>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="path">mailflow.local — New email</span>
+      </div>
+      <div class="app-shell" style="min-height:auto">
+        <div class="app-main" style="width:100%">
+          <div class="app-topbar">
+            <h3>New email</h3>
+            <p>Pick a template, fill the fields, and queue the email.</p>
+          </div>
+
+          <div class="compose-grid">
+            <div class="card-panel">
+              <div class="title">1 · Contact details</div>
+              <div class="field"><label>Template</label><div class="box filled">Job application</div></div>
+              <div class="field"><label>Email</label><div class="box filled">priya@irishealth.co</div></div>
+              <div class="field"><label>Company</label><div class="box filled">Iris Health</div></div>
+              <div class="field"><label>Name</label><div class="box dim">— blank → generic greeting —</div></div>
+              <div class="field"><label>Role</label><div class="box filled">Platform Engineer</div></div>
+            </div>
+
+            <div class="card-panel">
+              <div class="title">2 · Final email preview — exact match</div>
+              <div class="preview-box">
+                <div class="k">To</div><div class="v">priya@irishealth.co</div>
+                <div class="k">Subject</div><div class="v">Application — Platform Engineer at Iris Health</div>
+                <div class="k">Body</div>
+                <div class="body">Hi there,
+
+I'd love to be considered for the Platform Engineer role at Iris Health.
+<span class="strike-line">{job_link}<span class="tag">line dropped — blank</span></span>
+
+Thanks for your time,
+Ved Meena</div>
+              </div>
+              <div class="warn">⚠ No signature set — its line is dropped from the email. Add one in Settings.</div>
+              <div class="btn">Looks good — queue it</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout before"><b>Before</b><span>Preview showed literal <code>{signature}</code> text and kept blank-line placeholders the real send would remove.</span></div>
+      <div class="callout after"><b>After</b><span>Preview is a client-side port of the backend's render() — greeting fallback, dropped lines, and real signature all match exactly.</span></div>
+      <div class="callout"><b>Safety net</b><span>Amber warning up front if a template needs a signature you haven't set — no surprise blank line after sending.</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Next up · for review, not yet built</div>
+    <h2>Candidates waiting on your sign-off here first</h2>
+    <p class="lede">Per your instruction, these get mocked in this file and shown to you before any code is written.</p>
+    <div class="callouts">
+      <div class="callout"><b>Onboarding checklist</b><span>Card tracking Gmail connected → identity set → first template → first send.</span></div>
+      <div class="callout"><b>Toast polish</b><span>Replace the one remaining alert() (CSV export error) with the existing toast system.</span></div>
+      <div class="callout"><b>Live updates</b><span>Swap 20s polling for server-sent events so replies/sends flip instantly.</span></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>docs/artifact.html · UI/UX mockups, reviewed before implementation · updated 2026-07-02</footer>
+
+</body>
+</html>
