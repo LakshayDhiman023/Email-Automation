@@ -23,6 +23,7 @@ TEMPLATES = [
     {
         "name": "Example - Job application",
         "kind": "example",
+        "attach_resume": True,
         "subject": "Application for {role} at {company}",
         "body": (
             "Hi {name},\n\n"
@@ -36,6 +37,7 @@ TEMPLATES = [
     {
         "name": "Example - Referral request",
         "kind": "example",
+        "attach_resume": True,
         "subject": "Referral request for {role} at {company}",
         "body": (
             "Hi {name},\n\n"
@@ -49,6 +51,7 @@ TEMPLATES = [
     {
         "name": "Example - Sales intro",
         "kind": "example",
+        "attach_resume": False,
         "subject": "Quick idea for {company}",
         "body": (
             "Hi {name},\n\n"
@@ -60,6 +63,7 @@ TEMPLATES = [
     {
         "name": "Example - General outreach",
         "kind": "example",
+        "attach_resume": False,
         "subject": "Reaching out from {company}",
         "body": (
             "Hi {name},\n\n"
@@ -82,7 +86,8 @@ def main() -> None:
                 db.execute(
                     text(
                         "UPDATE templates SET kind=:kind, subject=:subject, "
-                        "body=:body, is_active=TRUE WHERE name=:name"
+                        "body=:body, attach_resume=:attach_resume, is_active=TRUE "
+                        "WHERE name=:name"
                     ),
                     t,
                 )
@@ -90,8 +95,8 @@ def main() -> None:
             else:
                 db.execute(
                     text(
-                        "INSERT INTO templates (name, kind, subject, body) "
-                        "VALUES (:name, :kind, :subject, :body)"
+                        "INSERT INTO templates (name, kind, subject, body, attach_resume) "
+                        "VALUES (:name, :kind, :subject, :body, :attach_resume)"
                     ),
                     t,
                 )
