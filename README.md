@@ -1,15 +1,21 @@
 # Recruiter Outreach Automation Platform
 
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=white)
+![Postgres](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white)
+
 A personal, $0, always-up tool to automate recruiter outreach: add a recruiter (name, company,
 email), pick a template, approve the generated email, and the system schedules + sends it from
-your own Gmail at human-looking weekday windows — then tracks replies and follow-ups.
+your own Gmail at human-looking weekday windows — then tracks replies and follow-ups. Timezone,
+send windows and working days are configurable in-app, so any region can use it.
 
 ## What it does
 
 - **Add a recruiter** → choose a **template** (e.g. official company / startup / generic) →
   it fills in `{recruiter_name}` / `{company}` and attaches your resume.
 - **Approve at add-time** → the draft is queued, you never send anything unreviewed.
-- **Scheduled sending** (IST, Mon–Fri, skips public holidays via the `holidays` library):
+- **Scheduled sending** (your timezone, chosen working days, optional public-holiday skip):
   - Two windows per day: **9–10 AM** and **2–3 PM**, each send at its own random minute.
   - Added before 9 AM → today 9–10; before 2 PM → today 2–3; after that → next working day 9–10.
 - **Reply detection** → polls Gmail for replies on tracked threads (presence only), auto-pauses
