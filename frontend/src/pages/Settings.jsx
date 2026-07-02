@@ -114,6 +114,8 @@ export default function Settings() {
         followup_after_working_days: Number(s.followup_after_working_days),
         holiday_mode: s.holiday_mode,
         holiday_country: s.holiday_country || "IN",
+        sender_name: s.sender_name || "",
+        signature: s.signature || "",
       });
       setS({ ...saved });
       toast("Settings saved ✓", "success");
@@ -200,6 +202,29 @@ export default function Settings() {
               onChange={(e) => set("holiday_country", e.target.value.toUpperCase())}
             />
           )}
+        </div>
+      </Card>
+
+      <Card title="Your identity">
+        <div className="grid gap-3">
+          <Input
+            label="Your name"
+            placeholder="e.g. Jordan Lee"
+            value={s.sender_name || ""}
+            onChange={(e) => set("sender_name", e.target.value)}
+          />
+          <label className="block">
+            <span className="block text-sm font-medium text-brand-ink/80 mb-1.5">
+              Email signature (use {"{signature}"} in a template to insert this)
+            </span>
+            <textarea
+              rows={4}
+              className="w-full rounded-lg border border-brand-line2 bg-white px-3.5 py-2.5 text-sm text-brand-ink outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15 transition"
+              placeholder={"Best regards,\nJordan Lee\n+1 555 0100"}
+              value={s.signature || ""}
+              onChange={(e) => set("signature", e.target.value)}
+            />
+          </label>
         </div>
       </Card>
 
