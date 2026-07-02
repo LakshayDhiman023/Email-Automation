@@ -26,13 +26,12 @@ log = logging.getLogger("followups")
 _settings = get_settings()
 
 # "Re: " threads it onto the original conversation in the recipient's client.
+# {name}/{signature} are filled from the contact + the user's configured signature.
 _FOLLOWUP_BODY = (
-    "Hi {recruiter_name},\n\n"
-    "I am writing you this mail to follow up on my application. Pl do let me know "
-    "if you have any update on the same. Appreciate your response.\n\n"
-    "Best regards,\n"
-    "Ved Prakash Meena\n"
-    "+91 8529608145"
+    "Hi {name},\n\n"
+    "I am writing to follow up on my previous email. Please let me know if you have "
+    "any update on the same. Appreciate your response.\n\n"
+    "{signature}"
 )
 
 
@@ -74,8 +73,12 @@ def create_followup(db: Session, thread_id: int, scheduled_at: datetime) -> None
     subject, body = build_followup_content(row["subject"] or "Following up")
     from app.services.outreach import render
 
-    _, body = render(subject, body,
-                     {"recruiter_name": row["recruiter_name"], "company": row["company"]})
+    _, body = render(subject, body, {
+        "name": row["recruiter_name"],
+        "recruiter_name": row["recruiter_name"],
+        "company": row["company"],
+        "signature": app_settings.get().signature,
+    })
 
     db.execute(
         text(
