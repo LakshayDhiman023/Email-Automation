@@ -1,7 +1,6 @@
-"""Seed placeholder templates. Replace the body text later with your real ones.
+"""Seed / update the real templates. Idempotent: upserts by name.
 
 Run:  cd backend && .venv/bin/python scripts/seed_templates.py
-Idempotent: skips templates whose name already exists.
 """
 import sys
 from pathlib import Path
@@ -14,48 +13,79 @@ load_dotenv()
 from sqlalchemy import text  # noqa: E402
 from app.core.db import SessionLocal  # noqa: E402
 
-SIGNATURE = (
-    "Best regards,\n"
-    "Ved Prakash Meena\n"
-    "+91 8529608145"
-)
+SIGNATURE = "Best regards,\nVed Prakash Meena\n+91 8529608145"
 
-PLACEHOLDERS = [
+# Per-application fields you fill in the dashboard: {company}, {recruiter_name},
+# {role} (required), and optional {job_id} / {job_link} (their line vanishes if blank).
+# Everything else (experience, name, phone, LinkedIn) is constant and stays fixed.
+TEMPLATES = [
     {
-        "name": "Template 1 - Official company",
-        "kind": "official_company",
-        "subject": "Looking for opportunities at {company}",
+        "name": "HR outreach - looking for opportunities",
+        "kind": "hr_opening",
+        "subject": "Looking for {role} Opportunities at {company}",
         "body": (
             "Hi {recruiter_name}, hope you are well.\n\n"
-            "I am currently looking for full-time opportunities in SDE / AI Engineering "
-            "as a fresher. I was wondering if there are any relevant openings at "
-            "{company}. I have nearly 11 months of internship experience and I am "
-            "currently an SDE intern at Mercer Mettl.\n\n"
+            "I am currently looking for a change ({role}) as a fresher. I was "
+            "wondering if there are any relevant openings at {company}. I have nearly "
+            "11 months of Internship experience and I am currently a SDE intern at "
+            "Mercer Mettl.\n\n"
+            "Job ID: {job_id}\n"
             "PFA my resume for your reference.\n\n" + SIGNATURE
         ),
     },
     {
-        "name": "Template 2 - Startup",
-        "kind": "startup",
-        "subject": "Keen to contribute at {company}",
+        "name": "Referral request",
+        "kind": "referral",
+        "subject": "Request for referral for {role} role at {company}",
         "body": (
-            "Hi {recruiter_name}, hope you're doing great.\n\n"
-            "I'm reaching out because I'd love to contribute at {company}. I'm a fresher "
-            "looking for full-time SDE / AI Engineering roles, with ~11 months of "
-            "internship experience (currently an SDE intern at Mercer Mettl).\n\n"
-            "PFA my resume — would be happy to chat if there's a fit.\n\n" + SIGNATURE
+            "Hi {recruiter_name},\n\n"
+            "Hope you are doing well. I wish to apply at {company} for a relevant "
+            "opening - {role}, I would be happy if you could refer me for the same. "
+            "I can share all the details required from my end.\n\n"
+            "Role link: {job_link}\n"
+            "PFA my resume attached for your reference. I would be grateful for the "
+            "same. Have a nice day ahead.\n\n" + SIGNATURE
         ),
     },
     {
-        "name": "Template 3 - Generic",
-        "kind": "generic",
-        "subject": "Full-time SDE / AI Engineering opportunities",
+        "name": "Direct inquiry",
+        "kind": "inquiry",
+        "subject": "Inquiry Regarding {role} Opportunities at {company}",
         "body": (
-            "Hi {recruiter_name}, hope you are well.\n\n"
-            "I am currently looking for full-time opportunities in SDE / AI Engineering "
-            "as a fresher. I was wondering if there are any relevant openings at "
+            "Hi {recruiter_name},\n\n"
+            "Hope you are doing well.\n\n"
+            "I am currently exploring opportunities for {role} and was wondering if "
+            "there are any relevant openings within your team or elsewhere at "
             "{company}.\n\n"
-            "PFA my resume for your reference.\n\n" + SIGNATURE
+            "Job ID: {job_id}\n"
+            "Role link: {job_link}\n"
+            "I have nearly 11 months of internship experience and am currently working "
+            "as an SDE Intern at Mercer Mettl.\n\n"
+            "LinkedIn: https://www.linkedin.com/in/ved-prakash-meena/\n\n"
+            "I have attached my resume for your reference. I would appreciate your "
+            "support in the same.\n\n"
+            "Thank you for your time and consideration.\n\n" + SIGNATURE
+        ),
+    },
+    {
+        "name": "Company HR inbox - direct application",
+        "kind": "company_hr",
+        "subject": "Application for {role} – Ved Prakash Meena",
+        "body": (
+            "Respected Hiring Manager,\n\n"
+            "I hope you are doing well.\n\n"
+            "I am interested in applying for the {role} role at {company}. I am "
+            "currently an SDE Intern at Mercer Mettl with nearly 11 months of "
+            "internship experience.\n\n"
+            "Job ID: {job_id}\n"
+            "Role link: {job_link}\n"
+            "I have attached my resume for your review. Please let me know if any "
+            "additional information is required from my end.\n\n"
+            "Thank you for your time and consideration.\n\n"
+            "Best regards,\n"
+            "Ved Prakash Meena\n"
+            "+91 8529608145\n"
+            "LinkedIn: https://www.linkedin.com/in/ved-prakash-meena/"
         ),
     },
 ]
@@ -64,21 +94,36 @@ PLACEHOLDERS = [
 def main() -> None:
     db = SessionLocal()
     try:
-        for t in PLACEHOLDERS:
-            exists = db.execute(
-                text("SELECT 1 FROM templates WHERE name=:n"), {"n": t["name"]}
+        for t in TEMPLATES:
+            existing = db.execute(
+                text("SELECT id FROM templates WHERE name=:n"), {"n": t["name"]}
             ).first()
-            if exists:
-                print(f"skip (exists): {t['name']}")
-                continue
-            db.execute(
-                text(
-                    "INSERT INTO templates (name, kind, subject, body) "
-                    "VALUES (:name, :kind, :subject, :body)"
-                ),
-                t,
-            )
-            print(f"inserted: {t['name']}")
+            if existing:
+                db.execute(
+                    text(
+                        "UPDATE templates SET kind=:kind, subject=:subject, "
+                        "body=:body, is_active=TRUE WHERE name=:name"
+                    ),
+                    t,
+                )
+                print(f"updated: {t['name']}")
+            else:
+                db.execute(
+                    text(
+                        "INSERT INTO templates (name, kind, subject, body) "
+                        "VALUES (:name, :kind, :subject, :body)"
+                    ),
+                    t,
+                )
+                print(f"inserted: {t['name']}")
+
+        # deactivate any template not in the current set (old placeholders + renamed
+        # rows like "Referral request - Software Developer") so the picker stays clean
+        current = [t["name"] for t in TEMPLATES]
+        db.execute(
+            text("UPDATE templates SET is_active=FALSE WHERE name <> ALL(:keep)"),
+            {"keep": current},
+        )
         db.commit()
     finally:
         db.close()
