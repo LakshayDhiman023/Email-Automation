@@ -64,12 +64,12 @@ export default function App() {
       <div className="min-h-screen flex">
         {/* ── Sidebar ── */}
         <aside className="hidden md:flex w-60 shrink-0 flex-col bg-brand-sidebar border-r border-brand-line">
-          <div className="px-6 py-6">
-            <span className="text-2xl font-bold text-brand-blue">✉ Mailflow</span>
+          <div className="px-6 py-7">
+            <span className="text-[22px] font-extrabold text-brand-blue tracking-tight">✉ Mailflow</span>
             <div className="text-xs text-brand-muted mt-1">Email Automation</div>
           </div>
 
-          <nav className="px-3 space-y-1">
+          <nav className="px-3 space-y-0.5">
             {NAV.map((n) => {
               const active = tab === n.id;
               const badge = n.badge ? stats[n.badge] : 0;
@@ -77,20 +77,16 @@ export default function App() {
                 <button
                   key={n.id}
                   onClick={() => setTab(n.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                     active
-                      ? "bg-brand-blue text-white shadow-blue"
+                      ? "bg-brand-blueSoft text-brand-blue"
                       : "text-brand-muted hover:text-brand-ink hover:bg-brand-panel2"
                   }`}
                 >
-                  <span className="w-5 text-center opacity-90">{n.icon}</span>
+                  <span className="w-5 text-center">{n.icon}</span>
                   <span className="flex-1 text-left">{n.label}</span>
                   {badge > 0 && (
-                    <span
-                      className={`text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center ${
-                        active ? "bg-white/25" : "bg-brand-blue text-white"
-                      }`}
-                    >
+                    <span className="text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center bg-brand-blue text-white">
                       {badge}
                     </span>
                   )}
@@ -113,21 +109,21 @@ export default function App() {
           <header className="sticky top-0 z-10 bg-brand-panel/95 backdrop-blur border-b border-brand-line">
             <div className="px-5 sm:px-8 py-4 flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-semibold text-brand-ink">
+                <h1 className="text-2xl font-extrabold text-brand-ink tracking-tight">
                   {NAV.find((n) => n.id === tab)?.label}
                 </h1>
-                <p className="text-sm text-brand-muted">{SUBTITLES[tab]}</p>
+                <p className="text-sm text-brand-muted mt-0.5">{SUBTITLES[tab]}</p>
               </div>
               <div className="flex items-center gap-2">
                 <a
                   href={api.exportCsvUrl()}
-                  className="text-sm font-semibold px-4 py-2 rounded-lg border border-brand-line text-brand-muted hover:text-brand-ink hover:bg-brand-panel2 transition"
+                  className="text-sm font-semibold px-4 py-2 rounded-lg border border-brand-line2 text-brand-ink hover:bg-brand-panel2 transition-colors"
                 >
                   Export CSV
                 </a>
                 <button
                   onClick={() => setTab("Add")}
-                  className="bg-brand-blue text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-blue hover:-translate-y-0.5 transition"
+                  className="bg-brand-blue text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand-blueDark transition-colors"
                 >
                   + New email
                 </button>
