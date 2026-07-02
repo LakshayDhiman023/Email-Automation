@@ -21,15 +21,13 @@ class Settings(BaseSettings):
     resume_path: str = "resume/resume.pdf"
     cors_origins: str = "http://localhost:5173"
 
-    # Scheduling windows (HH:MM, 24h, in `timezone`)
+    # Scheduling fallback defaults (the live values live in the app_settings table,
+    # editable on the Settings page). Used only before migration 003 / the row exists.
     window_a_start: str = "09:00"
     window_a_end: str = "10:00"
     window_b_start: str = "14:00"
     window_b_end: str = "15:00"
     followup_after_working_days: int = 5
-    # Holiday handling for scheduling: "national" = only India's 3 gazetted national
-    # holidays (most firms work through festivals); "all" = full `holidays` India set.
-    holiday_mode: str = "national"
 
     # Shared secret guarding ALL app endpoints (sent as X-API-Token). Empty => auth
     # disabled (local dev only). MUST be set in any public deployment, since the app
