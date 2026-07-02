@@ -18,6 +18,10 @@ CREATE TABLE IF NOT EXISTS app_settings (
     -- holiday_country (ISO code the `holidays` library understands, e.g. 'IN','US').
     holiday_mode    TEXT       NOT NULL DEFAULT 'none',
     holiday_country TEXT       NOT NULL DEFAULT 'IN',
+    -- the sender's identity, used by templates via the {signature} variable so each
+    -- self-hosted user personalizes emails without editing code
+    sender_name     TEXT       NOT NULL DEFAULT '',
+    signature       TEXT       NOT NULL DEFAULT '',
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
