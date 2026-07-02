@@ -1,4 +1,5 @@
-// UI primitives — Dropbox-inspired: electric blue, lots of white, flat & crisp.
+// UI primitives — standardized on a Dropbox-style visual language: pill buttons,
+// soft-grey pill badges, underlined text-links, bold rounded headings, lots of white.
 
 export function Card({ title, action, children }) {
   return (
@@ -16,14 +17,36 @@ export function Card({ title, action, children }) {
 
 export function Button({ variant = "primary", className = "", ...props }) {
   const base =
-    "px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed";
+    "px-5 py-2.5 rounded-full text-sm font-semibold transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed";
   const variants = {
     primary: "text-white bg-brand-blue hover:bg-brand-blueDark",
-    ghost: "text-brand-ink bg-white border border-brand-line2 hover:bg-brand-panel2",
-    danger: "text-rose-600 bg-white border border-rose-200 hover:bg-rose-50",
+    ghost: "text-brand-ink bg-white border-2 border-brand-ink hover:bg-brand-panel2",
+    danger: "text-rose-600 bg-white border-2 border-rose-200 hover:bg-rose-50",
     success: "text-white bg-brand-blue hover:bg-brand-blueDark",
   };
   return <button className={`${base} ${variants[variant]} ${className}`} {...props} />;
+}
+
+// Underlined text-action, for secondary CTAs ("Learn more →" style).
+export function TextLink({ className = "", children, ...props }) {
+  return (
+    <a
+      className={`inline-flex items-center gap-1.5 text-sm font-semibold text-brand-ink underline underline-offset-4 decoration-2 hover:text-brand-blue transition-colors cursor-pointer ${className}`}
+      {...props}
+    >
+      {children}
+    </a>
+  );
+}
+
+// Soft-grey pill label, used above headlines ("Organise"-style eyebrow tag).
+export function Eyebrow({ icon, children }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-panel2 border border-brand-line px-3.5 py-1.5 text-sm font-medium text-brand-muted">
+      {icon}
+      {children}
+    </span>
+  );
 }
 
 export function Input({ label, ...props }) {
