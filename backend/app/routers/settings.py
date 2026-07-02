@@ -26,6 +26,8 @@ class SettingsIn(BaseModel):
     followup_after_working_days: int = Field(ge=1, le=30)
     holiday_mode: str = Field(pattern="^(none|country)$")
     holiday_country: str = "IN"
+    sender_name: str = ""
+    signature: str = ""
 
     @field_validator("timezone")
     @classmethod
@@ -71,6 +73,7 @@ def update_settings(payload: SettingsIn, db: Session = Depends(get_db)):
               working_days=:working_days,
               followup_after_working_days=:followup_after_working_days,
               holiday_mode=:holiday_mode, holiday_country=:holiday_country,
+              sender_name=:sender_name, signature=:signature,
               updated_at=now()
             WHERE id=1
             """
