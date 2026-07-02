@@ -1,5 +1,5 @@
 """Contact / send / thread endpoints (the dashboard's main surface)."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -56,19 +56,23 @@ def close_thread(thread_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/sends", response_model=list[SendOut])
-def list_sends(status: str | None = None, db: Session = Depends(get_db)):
+def list_sends(status: str | None = None,
+               limit: int = Query(default=500, ge=1, le=2000),
+               db: Session = Depends(get_db)):
     q = "SELECT * FROM sends"
-    params = {}
+    params: dict = {"lim": limit}
     if status:
         q += " WHERE status=:status"
         params["status"] = status
-    q += " ORDER BY scheduled_at NULLS LAST, id DESC"
+    q += " ORDER BY scheduled_at NULLS LAST, id DESC LIMIT :lim"
     rows = db.execute(text(q), params).mappings().all()
     return [dict(r) for r in rows]
 
 
 @router.get("/threads", response_model=list[ThreadOut])
-def list_threads(status: str | None = None, db: Session = Depends(get_db)):
+def list_threads(status: str | None = None,
+                 limit: int = Query(default=500, ge=1, le=2000),
+                 db: Session = Depends(get_db)):
     """Threads joined with recruiter + their latest send (for dashboard sections).
 
     One query via a LATERAL join for the latest send per thread — avoids the N+1
@@ -89,11 +93,11 @@ def list_threads(status: str | None = None, db: Session = Depends(get_db)):
             ORDER BY s.id DESC LIMIT 1
         ) ls ON true
     """
-    params = {}
+    params: dict = {"lim": limit}
     if status:
         q += " WHERE t.status=:status"
         params["status"] = status
-    q += " ORDER BY t.created_at DESC"
+    q += " ORDER BY t.created_at DESC LIMIT :lim"
     rows = db.execute(text(q), params).mappings().all()
 
     out = []
