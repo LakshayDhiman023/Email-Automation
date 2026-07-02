@@ -1,22 +1,13 @@
-"""Send-time scheduling logic.
-
-Rules (all in IST / settings.timezone):
-  * Two windows per working day: A = 09:00–10:00, B = 14:00–15:00.
-  * Each send gets its OWN random minute/second inside its window (looks human).
-  * Working days only: Mon–Fri, excluding Indian public holidays.
-  * Slot assignment when a contact is added at local time `now`:
-      - before window A end (10:00)      -> today, window A
-      - before window B end (15:00)      -> today, window B
-      - otherwise (after 15:00)          -> next working day, window A
-      - if the chosen day is weekend/holiday, roll forward to next working day
-  * Missed windows (host was down) are handled by reschedule_if_past(): a send whose
-    time has already passed rolls forward to the next valid window.
-"""
+"""Send-time scheduling (IST): two weekday windows A=09:00-10:00, B=14:00-15:00, each
+send at a random second inside its window; added before A/B end -> that window today,
+else next working day A; weekends/holidays roll forward; missed sends roll to the next
+valid window."""
 from __future__ import annotations
 
 import random
 from datetime import date, datetime, time, timedelta
 
+import holidays as holidays_lib
 import pytz
 
 from app.core.config import get_settings
@@ -24,12 +15,15 @@ from app.core.config import get_settings
 _settings = get_settings()
 _TZ = pytz.timezone(_settings.timezone)
 
+_NATIONAL_FIXED = {(1, 26), (8, 15), (10, 2)}   # gazetted national holidays (always closed)
+_IN_HOLIDAYS = holidays_lib.country_holidays("IN")  # full calendar, used when mode="all"
 
-def _national_holiday(d: date) -> bool:
-    """Only India's 3 fixed national holidays, when offices are reliably closed.
-    Religious/optional holidays are intentionally excluded since most companies
-    work through many of them (and 'estimated' dates are unreliable)."""
-    return (d.month, d.day) in {(1, 26), (8, 15), (10, 2)}
+
+def _is_holiday(d: date) -> bool:
+    """Non-working holiday per holiday_mode: "national" (3 gazetted) or "all" (full)."""
+    if _settings.holiday_mode == "all":
+        return d in _IN_HOLIDAYS
+    return (d.month, d.day) in _NATIONAL_FIXED
 
 
 def _parse_hhmm(value: str) -> time:
@@ -47,7 +41,7 @@ def now_ist() -> datetime:
 
 
 def working_days_between(start: date, end: date) -> int:
-    """Count working days strictly after `start` up to and including `end`."""
+    """Working days after `start` through `end` inclusive."""
     if end <= start:
         return 0
     count = 0
@@ -63,7 +57,7 @@ def is_working_day(d: date) -> bool:
     """Mon–Fri and not an Indian public holiday."""
     if d.weekday() >= 5:  # 5=Sat, 6=Sun
         return False
-    return not _national_holiday(d)
+    return not _is_holiday(d)
 
 
 def next_working_day(d: date) -> date:
@@ -74,7 +68,7 @@ def next_working_day(d: date) -> date:
 
 
 def _random_dt_in_window(d: date, window: tuple[time, time]) -> datetime:
-    """A timezone-aware datetime at a random second within [start, end) on day d."""
+    """Tz-aware datetime at a random second within the window on day `d`."""
     start, end = window
     start_dt = _TZ.localize(datetime.combine(d, start))
     end_dt = _TZ.localize(datetime.combine(d, end))
@@ -94,20 +88,15 @@ def compute_send_time(now: datetime | None = None) -> datetime:
     today = now.date()
 
     if is_working_day(today):
-        # before window A closes -> window A today
         if now.time() < WINDOW_A[1]:
             return _random_dt_in_window(today, WINDOW_A)
-        # before window B closes -> window B today
         if now.time() < WINDOW_B[1]:
             return _random_dt_in_window(today, WINDOW_B)
-
-    # otherwise: next working day, window A
     return _random_dt_in_window(next_working_day(today), WINDOW_A)
 
 
 def reschedule_if_past(scheduled_at: datetime, now: datetime | None = None) -> datetime:
-    """If a scheduled time has already passed (host was down), roll it to the next
-    valid window. Returns the same value if it's still in the future."""
+    """Roll a past-due time to the next valid window; keep it if still in the future."""
     if now is None:
         now = datetime.now(_TZ)
     if scheduled_at.tzinfo is None:
@@ -118,7 +107,6 @@ def reschedule_if_past(scheduled_at: datetime, now: datetime | None = None) -> d
 
 
 def followup_time_from(return_date: date) -> datetime:
-    """For an out-of-office reply: schedule the follow-up on the recruiter's return
-    date (rolled to the next working day if needed), window A."""
+    """OOO follow-up time: the return date (or next working day), window A."""
     d = return_date if is_working_day(return_date) else next_working_day(return_date)
     return _random_dt_in_window(d, WINDOW_A)
