@@ -28,9 +28,9 @@ class SettingsIn(BaseModel):
     working_days: list[int] = Field(min_length=1)   # ISO 1=Mon…7=Sun
     followup_after_working_days: int = Field(ge=1, le=30)
     holiday_mode: str = Field(pattern="^(none|country)$")
-    holiday_country: str = "IN"
-    sender_name: str = ""
-    signature: str = ""
+    holiday_country: str = Field(default="IN", pattern="^[A-Za-z]{2}$")  # ISO 3166 alpha-2
+    sender_name: str = Field(default="", max_length=200)
+    signature: str = Field(default="", max_length=2000)
 
     @field_validator("timezone")
     @classmethod
