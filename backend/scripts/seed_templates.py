@@ -1,6 +1,10 @@
-"""Seed / update the real templates. Idempotent: upserts by name.
+"""Seed a few neutral example templates so a fresh install isn't empty. Idempotent.
 
-Run:  cd backend && .venv/bin/python scripts/seed_templates.py
+These are generic starting points — edit them (or add your own) in the Templates page.
+Any {variable} you write becomes a field on the compose form; {signature} is filled
+from the signature you set on the Settings page. Run once after migrations:
+
+    cd backend && .venv/bin/python scripts/seed_templates.py
 """
 import sys
 from pathlib import Path
@@ -13,79 +17,55 @@ load_dotenv()
 from sqlalchemy import text  # noqa: E402
 from app.core.db import SessionLocal  # noqa: E402
 
-SIGNATURE = "Best regards,\nVed Prakash Meena\n+91 8529608145"
-
-# Per-application fields you fill in the dashboard: {company}, {recruiter_name},
-# {role} (required), and optional {job_id} / {job_link} (their line vanishes if blank).
-# Everything else (experience, name, phone, LinkedIn) is constant and stays fixed.
+# Per-send fields come from the {variables} in each template; {signature} is pulled
+# from your Settings. Edit freely — nothing here is personal to any one user.
 TEMPLATES = [
     {
-        "name": "HR outreach - looking for opportunities",
-        "kind": "hr_opening",
-        "subject": "Looking for {role} Opportunities at {company}",
+        "name": "Example - Job application",
+        "kind": "example",
+        "subject": "Application for {role} at {company}",
         "body": (
-            "Hi {recruiter_name}, hope you are well.\n\n"
-            "I am currently looking for a change ({role}) as a fresher. I was "
-            "wondering if there are any relevant openings at {company}. I have nearly "
-            "11 months of Internship experience and I am currently a SDE intern at "
-            "Mercer Mettl.\n\n"
+            "Hi {name},\n\n"
+            "I'm reaching out about the {role} role at {company}. I believe my "
+            "background is a strong fit and I'd welcome the chance to discuss it.\n\n"
             "Job ID: {job_id}\n"
-            "PFA my resume for your reference.\n\n" + SIGNATURE
+            "My resume is attached for your reference.\n\n"
+            "{signature}"
         ),
     },
     {
-        "name": "Referral request",
-        "kind": "referral",
-        "subject": "Request for referral for {role} role at {company}",
+        "name": "Example - Referral request",
+        "kind": "example",
+        "subject": "Referral request for {role} at {company}",
         "body": (
-            "Hi {recruiter_name},\n\n"
-            "Hope you are doing well. I wish to apply at {company} for a relevant "
-            "opening - {role}, I would be happy if you could refer me for the same. "
-            "I can share all the details required from my end.\n\n"
-            "Role link: {job_link}\n"
-            "PFA my resume attached for your reference. I would be grateful for the "
-            "same. Have a nice day ahead.\n\n" + SIGNATURE
+            "Hi {name},\n\n"
+            "Hope you're doing well. I'm interested in the {role} opening at "
+            "{company} and would be grateful if you could refer me. Happy to share "
+            "anything you need from my side.\n\n"
+            "Role link: {job_link}\n\n"
+            "{signature}"
         ),
     },
     {
-        "name": "Direct inquiry",
-        "kind": "inquiry",
-        "subject": "Inquiry Regarding {role} Opportunities at {company}",
+        "name": "Example - Sales intro",
+        "kind": "example",
+        "subject": "Quick idea for {company}",
         "body": (
-            "Hi {recruiter_name},\n\n"
-            "Hope you are doing well.\n\n"
-            "I am currently exploring opportunities for {role} and was wondering if "
-            "there are any relevant openings within your team or elsewhere at "
-            "{company}.\n\n"
-            "Job ID: {job_id}\n"
-            "Role link: {job_link}\n"
-            "I have nearly 11 months of internship experience and am currently working "
-            "as an SDE Intern at Mercer Mettl.\n\n"
-            "LinkedIn: https://www.linkedin.com/in/ved-prakash-meena/\n\n"
-            "I have attached my resume for your reference. I would appreciate your "
-            "support in the same.\n\n"
-            "Thank you for your time and consideration.\n\n" + SIGNATURE
+            "Hi {name},\n\n"
+            "I work with teams like {company} on {topic}, and thought there might be "
+            "a fit. Would you be open to a short call next week?\n\n"
+            "{signature}"
         ),
     },
     {
-        "name": "Company HR inbox - direct application",
-        "kind": "company_hr",
-        "subject": "Application for {role} – Ved Prakash Meena",
+        "name": "Example - General outreach",
+        "kind": "example",
+        "subject": "Reaching out from {company}",
         "body": (
-            "Respected Hiring Manager,\n\n"
-            "I hope you are doing well.\n\n"
-            "I am interested in applying for the {role} role at {company}. I am "
-            "currently an SDE Intern at Mercer Mettl with nearly 11 months of "
-            "internship experience.\n\n"
-            "Job ID: {job_id}\n"
-            "Role link: {job_link}\n"
-            "I have attached my resume for your review. Please let me know if any "
-            "additional information is required from my end.\n\n"
-            "Thank you for your time and consideration.\n\n"
-            "Best regards,\n"
-            "Ved Prakash Meena\n"
-            "+91 8529608145\n"
-            "LinkedIn: https://www.linkedin.com/in/ved-prakash-meena/"
+            "Hi {name},\n\n"
+            "I wanted to connect regarding {topic}. Let me know if this is something "
+            "worth exploring together.\n\n"
+            "{signature}"
         ),
     },
 ]
