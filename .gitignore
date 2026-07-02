@@ -29,3 +29,6 @@ frontend/build/
 
 # Resume / personal artifacts (kept out of git)
 **/resume/*.pdf
+
+# Personal content — your real templates, signature, identity. Never pushed.
+personal/
