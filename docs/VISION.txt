@@ -1,0 +1,100 @@
+MAILFLOW — PRODUCT VISION
+=========================================================================
+The $0, self-hosted email outreach platform with a human in the loop.
+Version: 0.1 (working product) · Vision doc v1 · 2026-07-02
+
+-------------------------------------------------------------------------
+1. MISSION
+-------------------------------------------------------------------------
+Give one person the outreach power of a paid sales/recruiting stack —
+without the subscription, without handing a contact list to a SaaS vendor,
+and without ever sending an email a human didn't approve.
+
+Clone it. Plug in your own Supabase and Gmail. Deploy for free. It emails
+AS YOU, from YOUR account, on YOUR schedule, with YOUR data staying yours.
+
+-------------------------------------------------------------------------
+2. THE PROBLEM
+-------------------------------------------------------------------------
+- Outreach tools (Lemlist, Instantly, Smartlead, Gem, hireEZ) are built
+  for teams and priced like it ($30–$300+/mo). A student, job-seeker, or
+  indie founder needs 20 thoughtful emails a week, not 10,000 blasts.
+- Those tools hold your contact graph on their servers.
+- Full automation is how people get their Gmail suspended and their
+  reputation burned: no cap, no suppression hygiene, no review step.
+
+-------------------------------------------------------------------------
+3. PRINCIPLES (what makes this different)
+-------------------------------------------------------------------------
+P1. FREE FOREVER FOR ONE USER — every dependency has a $0 tier
+    (Supabase, Gmail API, free web hosts, cron-job.org).
+P2. SELF-HOSTED & OWNED — your DB, your OAuth app, your tokens.
+    Single-tenant by design; "multi-user" = another clone.
+P3. HUMAN-IN-THE-LOOP — nothing sends without explicit approval.
+    pending_approval -> approved -> sent is the heart of the product.
+P4. DELIVERABILITY IS SACRED — daily cap, suppression list, cooldowns,
+    bounce detection, send windows in the recipient's working hours.
+P5. RESPECT THE CHANNEL — no scraping-and-spraying, no ToS-violating
+    integrations (LinkedIn/X/Instagram DM automation: evaluated, REJECTED).
+P6. LEARNING-GRADE CODE — readable FastAPI + React, real tests, real
+    migrations; the repo doubles as a portfolio/teaching artifact.
+
+-------------------------------------------------------------------------
+4. WHERE WE ARE (v0.1 — shipped)
+-------------------------------------------------------------------------
+[x] Dynamic templates: any {variable}; compose form auto-generates inputs
+[x] Approval pipeline with edit-before-send, cancel, thread close
+[x] Scheduling: configurable timezone, send windows, working days,
+    country holidays; follow-ups after N working days
+[x] Reply detection + manual labeling (positive/negative/OOO with
+    return-date rescheduling); bounce -> auto-suppression
+[x] Safety rails: 40/day rolling cap, 30-day cooldown (force-overridable),
+    hard suppression list, retry with audit trail, orphan recovery
+[x] Works on sleeping free hosts: external cron drives POST /tasks/run
+[x] Settings-driven identity ({signature}, sender name), per-template
+    resume attachment, CSV export, metrics (reply/bounce rates)
+[x] OWASP-hardened API (auth throttle, security headers, header-injection
+    guards, fail-closed export), 29 tests, CI
+[x] Dropbox-language UI: electric blue on white, pill buttons, profile
+    widget
+
+-------------------------------------------------------------------------
+5. ROADMAP
+-------------------------------------------------------------------------
+NEAR (v0.2 — polish the single-player loop)
+- One-command setup: script that provisions schema, seeds templates,
+  checks Gmail auth ("clone -> running in 15 minutes")
+- Published Google OAuth app guide (stop 7-day token expiry)
+- Follow-up sequences: N steps per thread (today: one follow-up max)
+- Inline reply viewing in the dashboard (today: snippet only)
+
+MID (v0.3 — the "wow" layer, still $0)
+- AI reply drafting via local Ollama: draft a response to a positive
+  reply in your voice — still human-approved before sending (P3)
+- Template analytics: reply rate per template, A/B compare
+- Import contacts from CSV with per-row variable mapping
+- Digest notifications (daily email summary of replies/pending)
+
+LONG (v1.0 — a platform others build on)
+- Pluggable "campaign packs": shareable template+sequence bundles
+  (job hunt, fundraising, user research, link building)
+- Provider abstraction: Outlook/SMTP alongside Gmail
+- Optional lightweight login so a deployment can safely live on a
+  public URL (replaces the baked-in token trade-off)
+- Community: one-click deploy buttons (Render/Railway/Fly), docs site
+
+NON-GOALS (deliberate)
+- LinkedIn/X/Instagram DM automation (ToS-prohibited; harms P5)
+- Multi-tenant SaaS, billing, teams
+- Open/click tracking pixels (creepy; unreliable; against P5)
+- Volume features: no 1,000-email blasts, ever (P4)
+
+-------------------------------------------------------------------------
+6. WHAT SUCCESS LOOKS LIKE
+-------------------------------------------------------------------------
+- A stranger clones the repo and sends their first approved email within
+  15 minutes, having paid nothing.
+- Reply rate stays a first-class metric; sent volume never is.
+- Zero Gmail suspensions among users following the defaults.
+- The codebase is cited/forked as a reference FastAPI+React project.
+=========================================================================
