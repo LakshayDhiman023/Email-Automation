@@ -28,6 +28,12 @@ const NAV = [
   { id: "Settings", label: "Settings", Icon: IconSettings },
 ];
 
+function initials(name) {
+  if (!name?.trim()) return "?";
+  const parts = name.trim().split(/\s+/);
+  return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase();
+}
+
 const SUBTITLES = {
   Overview: "Where everything stands at a glance.",
   Add: "Pick a template, fill the fields, and queue the email.",
@@ -104,12 +110,22 @@ export default function App() {
             })}
           </nav>
 
-          <div className="mt-auto px-6 py-5 border-t border-brand-line">
-            <div className="text-sm font-medium text-brand-ink">
-              {me.sender_name || "Set your name in Settings"}
-            </div>
-            <div className="text-xs text-brand-muted truncate">Self-hosted · your Gmail</div>
-          </div>
+          <button
+            onClick={() => setTab("Settings")}
+            className="mt-auto flex items-center gap-3 px-6 py-4 border-t border-brand-line hover:bg-brand-panel2 transition-colors text-left"
+          >
+            <span className="shrink-0 w-9 h-9 rounded-full bg-brand-blueSoft text-brand-blue font-bold text-sm flex items-center justify-center">
+              {initials(me.sender_name)}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-brand-ink truncate">
+                {me.sender_name || "Set your name"}
+              </span>
+              <span className="block text-xs text-brand-muted truncate">
+                {me.resume_filename ? `📎 ${me.resume_filename}` : "No resume attached"}
+              </span>
+            </span>
+          </button>
         </aside>
 
         {/* ── Main column ── */}
