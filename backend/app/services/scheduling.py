@@ -80,7 +80,12 @@ def next_working_day(d: date) -> date:
 
 
 def working_days_between(start: date, end: date) -> int:
-    """Working days after `start` through `end` inclusive."""
+    """Working days strictly after `start`, up to and including `end`.
+
+    Defines the follow-up rule: sent Monday with a 5-day threshold means the
+    follow-up becomes due the NEXT Monday (Tue+Wed+Thu+Fri+Mon = 5), i.e. the
+    send day itself never counts. Pinned by tests — change deliberately.
+    """
     if end <= start:
         return 0
     count, d = 0, start
