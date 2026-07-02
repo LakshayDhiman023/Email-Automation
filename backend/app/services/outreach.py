@@ -300,10 +300,11 @@ def process_due_sends() -> None:
             text(
                 """
                 SELECT s.id, s.thread_id, s.type, s.subject, s.body, s.scheduled_at,
-                       s.attempts, r.email, t.gmail_thread_id
+                       s.attempts, r.email, t.gmail_thread_id, tm.attach_resume
                 FROM sends s
                 JOIN threads t ON t.id = s.thread_id
                 JOIN recruiters r ON r.id = t.recruiter_id
+                JOIN templates tm ON tm.id = t.template_id
                 WHERE s.status='approved' AND s.scheduled_at <= now()
                 ORDER BY s.scheduled_at
                 LIMIT :lim
@@ -379,7 +380,8 @@ def _dispatch_one(db: Session, row) -> None:
             to=row["email"],
             subject=row["subject"],
             body=row["body"],
-            attachment_path=_settings.resume_path,
+            # attachment is a per-template choice (job application yes, sales intro no)
+            attachment_path=_settings.resume_path if row["attach_resume"] else None,
             thread_id=row["gmail_thread_id"],
         )
         db.execute(
