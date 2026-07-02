@@ -15,34 +15,24 @@ locks / conflict-guards, so overlapping scheduler-and-cron invocations can't dou
 """
 from __future__ import annotations
 
-import hmac
+from fastapi import APIRouter, Depends
 
-from fastapi import APIRouter, Header, HTTPException
-
-from app.core.config import get_settings
+from app.core.security import require_api_token
 from app.services import followups, outreach, replies
 
-router = APIRouter(prefix="/tasks", tags=["tasks"])
-_settings = get_settings()
-
-
-def _authorize(token: str | None) -> None:
-    """Guard with API_TOKEN if configured (fail-closed once a token is set)."""
-    expected = _settings.api_token
-    if not expected:
-        return
-    if not token or not hmac.compare_digest(token, expected):
-        raise HTTPException(401, "missing or invalid API token")
+# Same guard (and failed-attempt throttle) as the rest of the API — no-op locally,
+# fail-closed once API_TOKEN is set.
+router = APIRouter(prefix="/tasks", tags=["tasks"],
+                   dependencies=[Depends(require_api_token)])
 
 
 @router.post("/run")
-def run_due_work(kind: str = "all", x_api_token: str | None = Header(default=None)):
+def run_due_work(kind: str = "all"):
     """Run due background work now. `kind` = all | sends | replies | followups.
 
     Designed to be called on a schedule by an external cron (cron-job.org) so the
     system works even when the host's in-process scheduler was asleep.
     """
-    _authorize(x_api_token)
     ran = {}
     if kind in ("all", "sends"):
         outreach.process_due_sends()
