@@ -25,9 +25,15 @@ from app.services import scheduling
 log = logging.getLogger("followups")
 _settings = get_settings()
 
-# Placeholder — replace with the real follow-up text later. "Re: " threads it onto
-# the original conversation in the recipient's client.
-_FOLLOWUP_BODY = "Following up on my application."
+# "Re: " threads it onto the original conversation in the recipient's client.
+_FOLLOWUP_BODY = (
+    "Hi {recruiter_name},\n\n"
+    "I am writing you this mail to follow up on my application. Pl do let me know "
+    "if you have any update on the same. Appreciate your response.\n\n"
+    "Best regards,\n"
+    "Ved Prakash Meena\n"
+    "+91 8529608145"
+)
 
 
 def build_followup_content(original_subject: str) -> tuple[str, str]:
@@ -41,24 +47,35 @@ def build_followup_content(original_subject: str) -> tuple[str, str]:
 def create_followup(db: Session, thread_id: int, scheduled_at: datetime) -> None:
     """Insert a pending-approval follow-up send for a thread at the given time.
     Skips if an unsent follow-up already exists for the thread (no duplicates)."""
+    # never create a second follow-up: count sent ones too, matching the no-reply sweep
     existing = db.execute(
         text(
             "SELECT 1 FROM sends WHERE thread_id=:tid AND type='followup' "
-            "AND status IN ('pending_approval','approved')"
+            "AND status IN ('pending_approval','approved','sent')"
         ),
         {"tid": thread_id},
     ).first()
     if existing:
         return
 
-    original_subject = db.execute(
+    row = db.execute(
         text(
-            "SELECT subject FROM sends WHERE thread_id=:tid AND type='initial' "
-            "ORDER BY id ASC LIMIT 1"
+            """
+            SELECT s.subject AS subject, r.name AS recruiter_name, r.company AS company
+            FROM threads t
+            JOIN recruiters r ON r.id = t.recruiter_id
+            LEFT JOIN sends s ON s.thread_id = t.id AND s.type='initial'
+            WHERE t.id = :tid
+            ORDER BY s.id ASC LIMIT 1
+            """
         ),
         {"tid": thread_id},
-    ).scalar()
-    subject, body = build_followup_content(original_subject or "Following up")
+    ).mappings().first()
+    subject, body = build_followup_content(row["subject"] or "Following up")
+    from app.services.outreach import render
+
+    _, body = render(subject, body,
+                     {"recruiter_name": row["recruiter_name"], "company": row["company"]})
 
     db.execute(
         text(
