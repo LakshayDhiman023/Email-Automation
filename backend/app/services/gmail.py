@@ -127,24 +127,66 @@ def get_thread_messages(thread_id: str) -> list[dict]:
     return thread.get("messages", [])
 
 
-def find_replies(thread_id: str, exclude_sender: str) -> list[dict]:
-    """Return messages in a thread that are NOT from us (i.e. inbound replies).
+def _extract_email(header_value: str) -> str:
+    """Pull the bare address out of a From header like 'Ved <ved@x.com>'."""
+    import email.utils
+
+    return email.utils.parseaddr(header_value)[1].lower()
+
+
+# Senders / subjects that indicate a delivery failure rather than a real reply.
+_BOUNCE_SENDERS = ("mailer-daemon", "postmaster")
+_BOUNCE_HINTS = ("delivery status notification", "undeliverable",
+                 "delivery has failed", "address not found", "message not delivered")
+
+
+def _looks_like_bounce(sender: str, subject: str) -> bool:
+    """Bounce iff it's from mailer-daemon/postmaster OR the SUBJECT is a failure notice.
+    Deliberately does NOT scan the body/snippet — a real reply quoting 'undeliverable'
+    must not be misread as a bounce (that would auto-suppress a live recruiter)."""
+    if any(b in sender.lower() for b in _BOUNCE_SENDERS):
+        return True
+    return any(h in subject.lower() for h in _BOUNCE_HINTS)
+
+
+def analyze_thread(thread_id: str, exclude_sender: str) -> dict:
+    """Inspect a Gmail thread once and return what the poller needs:
+      * replies:  genuine inbound messages (not from us, not bounces)
+      * bounced:  True if a delivery-failure message is present
 
     Presence detection only — sentiment is labeled manually in the dashboard.
-    Each item: {message_id, snippet, from, date}.
+
+    NOTE: we deliberately do NOT infer "opened". The Gmail API cannot tell whether a
+    RECIPIENT read the message without an embedded tracking pixel, and the UNREAD label
+    on our own SENT copy only reflects whether WE read it — a meaningless ~100% signal.
     """
+    exclude = exclude_sender.strip().lower()
     replies: list[dict] = []
+    bounced = False
+
     for m in get_thread_messages(thread_id):
-        headers = {h["name"].lower(): h["value"] for h in m.get("payload", {}).get("headers", [])}
+        headers = {h["name"].lower(): h["value"]
+                   for h in m.get("payload", {}).get("headers", [])}
         sender = headers.get("from", "")
-        if exclude_sender.lower() in sender.lower():
+        subject = headers.get("subject", "")
+        snippet = m.get("snippet", "")
+        if _extract_email(sender) == exclude:
             continue  # our own message
-        replies.append(
-            {
-                "message_id": m["id"],
-                "snippet": m.get("snippet", ""),
-                "from": sender,
-                "date": headers.get("date", ""),
-            }
-        )
-    return replies
+
+        if _looks_like_bounce(sender, subject):
+            bounced = True
+            continue
+
+        replies.append({
+            "message_id": m["id"],
+            "snippet": snippet,
+            "from": sender,
+            "date": headers.get("date", ""),
+        })
+
+    return {"replies": replies, "bounced": bounced}
+
+
+def find_replies(thread_id: str, exclude_sender: str) -> list[dict]:
+    """Backwards-compatible shim: just the genuine inbound replies."""
+    return analyze_thread(thread_id, exclude_sender)["replies"]
