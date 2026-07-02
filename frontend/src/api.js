@@ -29,6 +29,11 @@ export const api = {
   // stats & metrics
   stats: () => req("/stats"),
   metrics: () => req("/metrics"),
+
+  // app settings (timezone, send windows, working days)
+  getSettings: () => req("/settings"),
+  updateSettings: (s) => req("/settings", { method: "PUT", body: JSON.stringify(s) }),
+  listTimezones: () => req("/settings/timezones"),
   exportCsvUrl: () => {
     const token = import.meta.env.VITE_EXPORT_TOKEN;
     return BASE + "/export/outreach.csv" + (token ? `?token=${encodeURIComponent(token)}` : "");
