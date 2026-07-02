@@ -1,27 +1,27 @@
-// UI primitives — light, clean, recruitment-blue (Naukri-referenced ~50%).
+// UI primitives — Dropbox-inspired: electric blue, lots of white, flat & crisp.
 
 export function Card({ title, action, children }) {
   return (
-    <div className="bg-brand-panel rounded-xl shadow-card border border-brand-line overflow-hidden">
+    <div className="bg-brand-panel rounded-2xl border border-brand-line overflow-hidden">
       {(title || action) && (
-        <div className="flex items-center justify-between px-5 py-4 border-b border-brand-line">
-          <h2 className="font-semibold text-brand-ink">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-brand-line">
+          <h2 className="text-[15px] font-bold text-brand-ink tracking-tight">{title}</h2>
           {action}
         </div>
       )}
-      <div className="p-5">{children}</div>
+      <div className="p-6">{children}</div>
     </div>
   );
 }
 
 export function Button({ variant = "primary", className = "", ...props }) {
   const base =
-    "px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98]";
+    "px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed";
   const variants = {
-    primary: "text-white bg-brand-blue hover:bg-brand-blueDark shadow-blue disabled:opacity-40",
-    ghost: "text-brand-blue bg-brand-blueSoft hover:bg-brand-blue/15 border border-brand-blue/20",
-    danger: "text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100",
-    success: "text-white bg-brand-teal hover:brightness-95",
+    primary: "text-white bg-brand-blue hover:bg-brand-blueDark",
+    ghost: "text-brand-ink bg-white border border-brand-line2 hover:bg-brand-panel2",
+    danger: "text-rose-600 bg-white border border-rose-200 hover:bg-rose-50",
+    success: "text-white bg-brand-blue hover:bg-brand-blueDark",
   };
   return <button className={`${base} ${variants[variant]} ${className}`} {...props} />;
 }
@@ -30,10 +30,10 @@ export function Input({ label, ...props }) {
   return (
     <label className="block">
       {label && (
-        <span className="block text-sm font-medium text-brand-ink/80 mb-1.5">{label}</span>
+        <span className="block text-sm font-semibold text-brand-ink mb-1.5">{label}</span>
       )}
       <input
-        className="w-full rounded-lg border border-brand-line2 bg-white px-3.5 py-2.5 text-sm text-brand-ink placeholder-brand-muted/60 outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15 transition"
+        className="w-full rounded-lg border border-brand-line2 bg-white px-3.5 py-2.5 text-sm text-brand-ink placeholder-brand-muted/60 outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition"
         {...props}
       />
     </label>
@@ -44,10 +44,10 @@ export function Select({ label, children, className = "", ...props }) {
   return (
     <label className="block">
       {label && (
-        <span className="block text-sm font-medium text-brand-ink/80 mb-1.5">{label}</span>
+        <span className="block text-sm font-semibold text-brand-ink mb-1.5">{label}</span>
       )}
       <select
-        className={`w-full rounded-lg border border-brand-line2 bg-white px-3.5 py-2.5 text-sm text-brand-ink outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15 transition ${className}`}
+        className={`w-full rounded-lg border border-brand-line2 bg-white px-3.5 py-2.5 text-sm text-brand-ink outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition ${className}`}
         {...props}
       >
         {children}
@@ -87,7 +87,7 @@ export function Empty({ children }) {
 // Pill-style secondary toggle used inside grouped pages.
 export function SubTabs({ tabs, active, onChange, counts = {} }) {
   return (
-    <div className="inline-flex gap-1 p-1 rounded-lg bg-white border border-brand-line mb-5 shadow-card">
+    <div className="inline-flex gap-1 p-1 rounded-xl bg-brand-panel2 border border-brand-line mb-6">
       {tabs.map((t) => (
         <button
           key={t}
