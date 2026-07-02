@@ -22,6 +22,7 @@ export default function AddContact({ templates, onAdded }) {
   const [vals, setVals] = useState({}); // variable name -> value (incl. recruiter_name, company)
   const [busy, setBusy] = useState(false);
   const [queued, setQueued] = useState(null);
+  const [cooldownBlock, setCooldownBlock] = useState(null); // error msg when a re-contact is blocked
 
   const tmpl = templates.find((t) => String(t.id) === String(templateId));
   // company is core to the recruiter record (used for dedup), so always collect it
@@ -47,8 +48,9 @@ export default function AddContact({ templates, onAdded }) {
     return { subject: render(tmpl.subject, vals), body: render(tmpl.body, vals) };
   }, [tmpl, vals]);
 
-  async function confirmQueue() {
+  async function confirmQueue(force = false) {
     setBusy(true);
+    setCooldownBlock(null);
     try {
       // name/company are first-class ({name} or the {recruiter_name} alias); rest go in variables
       const { name = "", recruiter_name = "", company = "", ...extra } = vals;
@@ -58,6 +60,7 @@ export default function AddContact({ templates, onAdded }) {
         email,
         template_id: Number(templateId),
         variables: extra,
+        force,
       });
       setQueued(send);
       setVals({});
@@ -65,7 +68,9 @@ export default function AddContact({ templates, onAdded }) {
       toast("Draft queued — approve it under Outreach", "success");
       onAdded?.();
     } catch (e) {
-      toast(e.message, "error");
+      // the cooldown guard is overridable — surface a "send anyway" choice
+      if (/force to override/i.test(e.message)) setCooldownBlock(e.message);
+      else toast(e.message, "error");
     } finally {
       setBusy(false);
     }
@@ -147,13 +152,15 @@ export default function AddContact({ templates, onAdded }) {
               <pre className="mt-1 whitespace-pre-wrap text-sm text-brand-ink font-sans">
                 {preview.body}
               </pre>
-              <div className="mt-3 text-xs text-brand-muted">
-                📎 Your configured resume will be attached.
-              </div>
+              {tmpl?.attach_resume && (
+                <div className="mt-3 text-xs text-brand-muted">
+                  📎 Your configured resume will be attached.
+                </div>
+              )}
             </div>
 
             <div className="mt-4 flex items-center gap-3">
-              <Button onClick={confirmQueue} disabled={!ready || busy}>
+              <Button onClick={() => confirmQueue()} disabled={!ready || busy}>
                 {busy ? "Queuing…" : "Looks good — queue it"}
               </Button>
               {!ready && (
@@ -162,6 +169,20 @@ export default function AddContact({ templates, onAdded }) {
                 </span>
               )}
             </div>
+
+            {cooldownBlock && (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm">
+                <div className="text-amber-800">{cooldownBlock}</div>
+                <div className="mt-2 flex gap-2">
+                  <Button onClick={() => confirmQueue(true)} disabled={busy}>
+                    Send anyway
+                  </Button>
+                  <Button variant="ghost" onClick={() => setCooldownBlock(null)}>
+                    Never mind
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {queued && (
               <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm">
