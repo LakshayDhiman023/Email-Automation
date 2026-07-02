@@ -11,7 +11,7 @@ import Templates from "./pages/Templates";
 
 const NAV = [
   { id: "Overview", label: "Overview", icon: "◧" },
-  { id: "Add", label: "Add recruiter", icon: "+" },
+  { id: "Add", label: "New email", icon: "+" },
   { id: "Outreach", label: "Outreach", icon: "✦", badge: "pending_approval" },
   { id: "Replies", label: "Replies", icon: "✉", badge: "needs_review" },
   { id: "Templates", label: "Templates", icon: "▤" },
@@ -21,7 +21,7 @@ const NAV = [
 
 const SUBTITLES = {
   Overview: "Where everything stands at a glance.",
-  Add: "Add a recruiter and generate the draft.",
+  Add: "Pick a template, fill the fields, and queue the email.",
   Outreach: "Approvals, the scheduled queue, and your sent log.",
   Replies: "Review detected replies and label them.",
   Templates: "Your outreach templates.",
@@ -64,7 +64,7 @@ export default function App() {
         <aside className="hidden md:flex w-60 shrink-0 flex-col bg-brand-sidebar border-r border-brand-line">
           <div className="px-6 py-6">
             <span className="text-2xl font-bold text-brand-blue">{"<Ved/>"}</span>
-            <div className="text-xs text-brand-muted mt-1">Recruiter Outreach</div>
+            <div className="text-xs text-brand-muted mt-1">Email Automation</div>
           </div>
 
           <nav className="px-3 space-y-1">
@@ -125,7 +125,7 @@ export default function App() {
                   onClick={() => setTab("Add")}
                   className="bg-brand-blue text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-blue hover:-translate-y-0.5 transition"
                 >
-                  + Add recruiter
+                  + New email
                 </button>
               </div>
             </div>
