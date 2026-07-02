@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
 import { ToastProvider } from "./components/Toast";
+import {
+  IconBlock,
+  IconGrid,
+  IconList,
+  IconMail,
+  IconPlus,
+  IconSend,
+  IconSettings,
+} from "./components/icons";
 import AddContact from "./pages/AddContact";
 import Overview from "./pages/Overview";
 import Outreach from "./pages/Outreach";
@@ -10,13 +19,13 @@ import Suppression from "./pages/Suppression";
 import Templates from "./pages/Templates";
 
 const NAV = [
-  { id: "Overview", label: "Overview", icon: "◧" },
-  { id: "Add", label: "New email", icon: "+" },
-  { id: "Outreach", label: "Outreach", icon: "✦", badge: "pending_approval" },
-  { id: "Replies", label: "Replies", icon: "✉", badge: "needs_review" },
-  { id: "Templates", label: "Templates", icon: "▤" },
-  { id: "Suppression", label: "Suppression", icon: "⊘" },
-  { id: "Settings", label: "Settings", icon: "⚙" },
+  { id: "Overview", label: "Overview", Icon: IconGrid },
+  { id: "Add", label: "New email", Icon: IconPlus },
+  { id: "Outreach", label: "Outreach", Icon: IconSend, badge: "pending_approval" },
+  { id: "Replies", label: "Replies", Icon: IconMail, badge: "needs_review" },
+  { id: "Templates", label: "Templates", Icon: IconList },
+  { id: "Suppression", label: "Suppression", Icon: IconBlock },
+  { id: "Settings", label: "Settings", Icon: IconSettings },
 ];
 
 const SUBTITLES = {
@@ -83,7 +92,7 @@ export default function App() {
                       : "text-brand-muted hover:text-brand-ink hover:bg-brand-panel2"
                   }`}
                 >
-                  <span className="w-5 text-center">{n.icon}</span>
+                  <n.Icon className="shrink-0" />
                   <span className="flex-1 text-left">{n.label}</span>
                   {badge > 0 && (
                     <span className="text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center bg-brand-blue text-white">
