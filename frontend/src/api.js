@@ -34,9 +34,28 @@ export const api = {
   getSettings: () => req("/settings"),
   updateSettings: (s) => req("/settings", { method: "PUT", body: JSON.stringify(s) }),
   listTimezones: () => req("/settings/timezones"),
-  exportCsvUrl: () => {
+  // Download the CSV via fetch + blob so the export token travels in a HEADER,
+  // never in a URL (URLs end up in server logs and browser history).
+  downloadExportCsv: async () => {
     const token = import.meta.env.VITE_EXPORT_TOKEN;
-    return BASE + "/export/outreach.csv" + (token ? `?token=${encodeURIComponent(token)}` : "");
+    const res = await fetch(BASE + "/export/outreach.csv", {
+      headers: token ? { "X-Export-Token": token } : {},
+    });
+    if (!res.ok) {
+      let detail = res.statusText;
+      try {
+        detail = (await res.json()).detail || detail;
+      } catch {
+        /* non-JSON error body */
+      }
+      throw new Error(detail);
+    }
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "outreach.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   },
 
   // suppression / opt-out list
