@@ -3,11 +3,26 @@ import { api } from "../api";
 import { useToast } from "../components/Toast";
 import { Button, Card, Input, Select, fmt } from "../components/ui";
 
-// Fill {variables} client-side so the preview is exact & instant.
-function render(text, values) {
-  return (text || "").replace(/\{([a-zA-Z0-9_]+)\}/g, (m, k) =>
-    values[k] != null && values[k] !== "" ? values[k] : m
+// Client-side port of the backend's render() so the preview IS the email that
+// sends: blank values drop their whole body line, blank subject vars vanish,
+// unknown placeholders stay intact. Keep in sync with services/outreach.render.
+const VAR_RE = /\{([a-zA-Z0-9_]+)\}/g;
+function renderExact(subject, body, values) {
+  const filled = {};
+  const blank = new Set();
+  for (const [k, v] of Object.entries(values)) {
+    if (v != null && String(v).trim()) filled[k] = v;
+    else blank.add(k);
+  }
+  const sub = (s) => s.replace(VAR_RE, (m, k) => (k in filled ? filled[k] : m));
+  const renderedSubject = (subject || "").replace(VAR_RE, (m, k) =>
+    k in filled ? filled[k] : blank.has(k) ? "" : m
   );
+  const keptBody = (body || "")
+    .split("\n")
+    .filter((line) => ![...blank].some((b) => line.includes("{" + b + "}")))
+    .join("\n");
+  return { subject: renderedSubject, body: sub(keptBody) };
 }
 
 // Turn a variable name into a friendly label: recruiter_name -> "Recruiter name".
@@ -15,7 +30,7 @@ function label(v) {
   return v.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 }
 
-export default function AddContact({ templates, onAdded }) {
+export default function AddContact({ templates, onAdded, settings }) {
   const toast = useToast();
   const [templateId, setTemplateId] = useState("");
   const [email, setEmail] = useState("");
@@ -45,8 +60,16 @@ export default function AddContact({ templates, onAdded }) {
 
   const preview = useMemo(() => {
     if (!tmpl) return null;
-    return { subject: render(tmpl.subject, vals), body: render(tmpl.body, vals) };
-  }, [tmpl, vals]);
+    // mirror add_contact(): name falls back to "there", signature comes from Settings
+    const name = (vals.name ?? vals.recruiter_name ?? "").trim() || "there";
+    return renderExact(tmpl.subject, tmpl.body, {
+      ...vals,
+      name,
+      recruiter_name: name,
+      company: vals.company || "",
+      signature: settings?.signature || "",
+    });
+  }, [tmpl, vals, settings]);
 
   async function confirmQueue(force = false) {
     setBusy(true);
@@ -155,6 +178,11 @@ export default function AddContact({ templates, onAdded }) {
               {tmpl?.attach_resume && (
                 <div className="mt-3 text-xs text-brand-muted">
                   📎 Your configured resume will be attached.
+                </div>
+              )}
+              {tmpl && !settings?.signature?.trim() && tmpl.body.includes("{signature}") && (
+                <div className="mt-2 text-xs text-amber-700">
+                  No signature set — its line is dropped from the email. Add one in Settings.
                 </div>
               )}
             </div>
