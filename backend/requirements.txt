@@ -10,3 +10,4 @@ google-auth>=2.37
 google-auth-oauthlib>=1.2
 google-api-python-client>=2.157
 pytz>=2024.2
+holidays>=0.60
