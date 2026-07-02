@@ -13,11 +13,10 @@ router = APIRouter(tags=["replies"])
 @router.post("/threads/{thread_id}/label", status_code=204)
 def label_thread_reply(thread_id: int, payload: ReplyLabel,
                        db: Session = Depends(get_db)):
-    """User labels a detected reply: positive | negative | ooo (+ return date)."""
+    """User labels a detected reply: positive | negative | out_of_office.
+    out_of_office requires payload.return_date."""
     try:
-        replies.label_reply(
-            db, thread_id, payload.label, ooo_return_date=payload.ooo_return_date
-        )
+        replies.label_reply(db, thread_id, payload.label, payload.return_date)
     except ValueError as e:
         raise HTTPException(400, str(e))
 
