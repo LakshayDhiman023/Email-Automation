@@ -315,8 +315,8 @@ def process_due_sends() -> None:
         claimed = []
         for row in due:
             age_min = (
-                scheduling.now_ist()
-                - row["scheduled_at"].astimezone(scheduling._TZ)  # noqa: SLF001
+                scheduling.now_tz()
+                - scheduling.to_local(row["scheduled_at"])
             ).total_seconds() / 60
             if age_min > _STALE_AFTER_MINUTES:
                 # roll forward (preserves a follow-up's return-date intent vs. firing late)
