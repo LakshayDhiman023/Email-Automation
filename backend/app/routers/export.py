@@ -5,37 +5,32 @@
 /metrics             — funnel + deliverability summary beyond the dashboard badges.
 """
 import csv
-import hmac
 import io
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import get_db
+from app.core.security import verify_shared_token
 
 router = APIRouter(tags=["export"])
 _settings = get_settings()
 
 
-def _check_export_token(token: str | None) -> None:
-    """Fail-closed gate for the CSV dump (contains every recruiter email + body).
-    Disabled unless EXPORT_TOKEN is set; compared in constant time."""
-    configured = _settings.export_token
-    if not configured:
-        raise HTTPException(403, "CSV export is disabled; set EXPORT_TOKEN to enable it.")
-    if not token or not hmac.compare_digest(token, configured):
-        raise HTTPException(403, "invalid or missing export token")
-
-
 @router.get("/export/outreach.csv")
-def export_outreach(token: str | None = Query(default=None),
+def export_outreach(request: Request,
                     x_export_token: str | None = Header(default=None),
                     db: Session = Depends(get_db)):
-    # prefer the header (kept out of logs/history); fall back to query for <a> downloads
-    _check_export_token(x_export_token or token)
+    # Fail-closed gate for the CSV dump (contains every contact email + body).
+    # Header ONLY — a token in the query string would leak into server/proxy logs
+    # and browser history (OWASP A09/A02). The frontend downloads via fetch+blob.
+    if not _settings.export_token:
+        raise HTTPException(403, "CSV export is disabled; set EXPORT_TOKEN to enable it.")
+    verify_shared_token(request, x_export_token, _settings.export_token,
+                        header_name="X-Export-Token")
     rows = db.execute(
         text(
             """
