@@ -33,6 +33,7 @@ export default function App() {
   const [tab, setTab] = useState("Overview");
   const [templates, setTemplates] = useState([]);
   const [stats, setStats] = useState({});
+  const [me, setMe] = useState({ sender_name: "" });
   const [refreshKey, setRefreshKey] = useState(0);
 
   const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
@@ -45,7 +46,8 @@ export default function App() {
 
   useEffect(() => {
     loadTemplates();
-  }, [loadTemplates]);
+    api.getSettings().then(setMe).catch(() => {});
+  }, [loadTemplates, refreshKey]);
 
   // refresh stats on every action + poll every 20s so the dashboard stays live
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function App() {
         {/* ── Sidebar ── */}
         <aside className="hidden md:flex w-60 shrink-0 flex-col bg-brand-sidebar border-r border-brand-line">
           <div className="px-6 py-6">
-            <span className="text-2xl font-bold text-brand-blue">{"<Ved/>"}</span>
+            <span className="text-2xl font-bold text-brand-blue">✉ Mailflow</span>
             <div className="text-xs text-brand-muted mt-1">Email Automation</div>
           </div>
 
@@ -98,8 +100,10 @@ export default function App() {
           </nav>
 
           <div className="mt-auto px-6 py-5 border-t border-brand-line">
-            <div className="text-sm font-medium text-brand-ink">Ved Prakash Meena</div>
-            <div className="text-xs text-brand-muted truncate">connect.ved21@gmail.com</div>
+            <div className="text-sm font-medium text-brand-ink">
+              {me.sender_name || "Set your name in Settings"}
+            </div>
+            <div className="text-xs text-brand-muted truncate">Self-hosted · your Gmail</div>
           </div>
         </aside>
 
