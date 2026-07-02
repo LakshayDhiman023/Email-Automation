@@ -1,10 +1,10 @@
 """Reply listing + labeling endpoints, and a manual poll trigger."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
-from app.models.schemas import ReplyLabel
+from app.models.schemas import ReplyLabel, ReplyOut
 from app.services import replies
 
 router = APIRouter(tags=["replies"])
@@ -21,14 +21,16 @@ def label_thread_reply(thread_id: int, payload: ReplyLabel,
         raise HTTPException(400, str(e))
 
 
-@router.get("/replies")
-def list_replies(thread_id: int | None = None, db: Session = Depends(get_db)):
-    q = "SELECT * FROM replies"
-    params = {}
+@router.get("/replies", response_model=list[ReplyOut])
+def list_replies(thread_id: int | None = None, limit: int = Query(default=200, ge=1, le=1000),
+                 db: Session = Depends(get_db)):
+    """Detected replies, newest first. Internal Gmail ids stay server-side."""
+    q = "SELECT id, thread_id, snippet, received_at, label FROM replies"
+    params: dict = {"lim": limit}
     if thread_id is not None:
         q += " WHERE thread_id=:tid"
         params["tid"] = thread_id
-    q += " ORDER BY received_at DESC, id DESC"
+    q += " ORDER BY received_at DESC, id DESC LIMIT :lim"
     return [dict(r) for r in db.execute(text(q), params).mappings().all()]
 
 
