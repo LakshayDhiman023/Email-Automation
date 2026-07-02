@@ -29,6 +29,8 @@ class SchedulingSettings:
     followup_after_working_days: int
     holiday_mode: str                      # 'none' | 'country'
     holiday_country: str                   # ISO code, e.g. 'IN', 'US'
+    sender_name: str                       # the user's name (for their own reference)
+    signature: str                         # email sign-off, exposed as {signature}
 
 
 def _env_defaults() -> SchedulingSettings:
@@ -42,6 +44,8 @@ def _env_defaults() -> SchedulingSettings:
         followup_after_working_days=_env.followup_after_working_days,
         holiday_mode="none",
         holiday_country="IN",
+        sender_name="",
+        signature="",
     )
 
 
@@ -58,7 +62,8 @@ def get() -> SchedulingSettings:
         row = db.execute(
             text("SELECT timezone, window_a_start, window_a_end, window_b_start, "
                  "window_b_end, working_days, followup_after_working_days, "
-                 "holiday_mode, holiday_country FROM app_settings WHERE id=1")
+                 "holiday_mode, holiday_country, sender_name, signature "
+                 "FROM app_settings WHERE id=1")
         ).mappings().first()
         if not row:
             _cache = _env_defaults()
@@ -73,6 +78,8 @@ def get() -> SchedulingSettings:
                 followup_after_working_days=row["followup_after_working_days"],
                 holiday_mode=row["holiday_mode"],
                 holiday_country=row["holiday_country"],
+                sender_name=row["sender_name"],
+                signature=row["signature"],
             )
     except Exception as e:  # noqa: BLE001 — table may not exist yet; use env defaults
         log.warning("app_settings unavailable (%s); using .env defaults", e)
