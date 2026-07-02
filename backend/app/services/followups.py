@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import SessionLocal
-from app.services import scheduling
+from app.services import app_settings, scheduling
 
 log = logging.getLogger("followups")
 _settings = get_settings()
@@ -112,11 +112,11 @@ def generate_due_followups() -> int:
             )
         ).mappings().all()
 
-        now = scheduling.now_ist()
-        threshold = _settings.followup_after_working_days
+        now = scheduling.now_tz()
+        threshold = app_settings.get().followup_after_working_days
         created = 0
         for c in candidates:
-            sent_date = c["sent_at"].astimezone(scheduling._TZ).date()  # noqa: SLF001
+            sent_date = scheduling.to_local(c["sent_at"]).date()
             elapsed = scheduling.working_days_between(sent_date, now.date())
             if elapsed >= threshold:
                 # schedule the follow-up in the next valid window from now
