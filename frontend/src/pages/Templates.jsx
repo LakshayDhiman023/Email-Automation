@@ -13,16 +13,21 @@ function varsIn(...texts) {
 
 export default function Templates({ templates, onChange }) {
   const [editing, setEditing] = useState(null); // template id or "new"
-  const [form, setForm] = useState({ name: "", kind: "generic", subject: "", body: "" });
+  const [form, setForm] = useState({
+    name: "", kind: "generic", subject: "", body: "", attach_resume: true,
+  });
   const formVars = varsIn(form.subject, form.body);
 
   function startEdit(t) {
     setEditing(t.id);
-    setForm({ name: t.name, kind: t.kind, subject: t.subject, body: t.body });
+    setForm({
+      name: t.name, kind: t.kind, subject: t.subject, body: t.body,
+      attach_resume: t.attach_resume ?? true,
+    });
   }
   function startNew() {
     setEditing("new");
-    setForm({ name: "", kind: "generic", subject: "", body: "" });
+    setForm({ name: "", kind: "generic", subject: "", body: "", attach_resume: true });
   }
 
   async function save() {
@@ -87,6 +92,15 @@ export default function Templates({ templates, onChange }) {
               <span className="italic">none yet — add {"{variables}"} above</span>
             )}
           </div>
+          <label className="flex items-center gap-2 text-sm text-brand-ink cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.attach_resume}
+              onChange={(e) => setForm({ ...form, attach_resume: e.target.checked })}
+              className="w-4 h-4 accent-brand-blue"
+            />
+            Attach my resume/file to emails sent with this template
+          </label>
           <div className="flex gap-2">
             <Button onClick={save}>Save</Button>
             <Button variant="ghost" onClick={() => setEditing(null)}>
