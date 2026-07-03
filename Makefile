@@ -26,7 +26,7 @@ frontend:
 	cd frontend && npm run dev
 
 test:
-	cd backend && .venv/bin/python -m pytest tests/ -q
+	cd backend && .venv/bin/python -m pytest tests/ -q --cov --cov-report=term-missing
 
 lint:
 	cd backend && .venv/bin/ruff check app/ scripts/ tests/
