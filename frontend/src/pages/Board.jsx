@@ -53,10 +53,18 @@ function Chip({ kind }) {
 
 export default function Board({ refreshKey, goTo }) {
   const [threads, setThreads] = useState(null);
+  const [search, setSearch] = useState("");
+  const [debounced, setDebounced] = useState("");
+
+  // debounce so typing doesn't fire a query per keystroke
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(search.trim()), 250);
+    return () => clearTimeout(id);
+  }, [search]);
 
   useEffect(() => {
-    api.listThreads().then(setThreads).catch(() => setThreads([]));
-  }, [refreshKey]);
+    api.listThreads(null, debounced || undefined).then(setThreads).catch(() => setThreads([]));
+  }, [refreshKey, debounced]);
 
   const lanes = useMemo(() => {
     const by = Object.fromEntries(COLUMNS.map((c) => [c.id, []]));
@@ -64,65 +72,86 @@ export default function Board({ refreshKey, goTo }) {
     return by;
   }, [threads]);
 
-  if (threads === null) {
-    return <div className="text-sm text-brand-muted py-10 text-center">Loading pipeline…</div>;
-  }
+  const totalShown = threads?.length ?? 0;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5 items-start">
-      {COLUMNS.map((col) => (
-        <div key={col.id} className="rounded-2xl bg-brand-panel2/60 border border-brand-line">
-          <div className="flex items-center gap-2 px-4 py-3">
-            <span className={`w-2 h-2 rounded-full ${col.accent}`} />
-            <span className="text-sm font-bold text-brand-ink flex-1">{col.title}</span>
-            <span className="text-xs font-semibold text-brand-muted">{lanes[col.id].length}</span>
-          </div>
-          <div className="px-3 pb-3 space-y-2">
-            {lanes[col.id].length === 0 && (
-              <div className="text-xs text-brand-muted text-center py-6">Nothing here</div>
-            )}
-            {lanes[col.id].map((t) => {
-              const ls = t.latest_send;
-              const chipKind = REPLIED.has(t.status) || t.status !== "active"
-                ? t.status
-                : ls?.status === "failed"
-                ? "failed"
-                : null;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => goTo(col.tab)}
-                  className="w-full text-left rounded-xl bg-brand-panel border border-brand-line p-3 hover:border-brand-blue/40 hover:shadow-sm transition-all"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-semibold text-brand-ink truncate">
-                      {t.company}
-                    </span>
-                    {chipKind && <Chip kind={chipKind} />}
-                  </div>
-                  <div className="text-xs text-brand-muted truncate">
-                    {t.recruiter_name !== "there" ? `${t.recruiter_name} · ` : ""}
-                    {t.email}
-                  </div>
-                  {ls && (
-                    <div className="mt-2 text-xs text-brand-muted truncate" title={ls.subject}>
-                      {ls.type === "followup" ? "↩ " : ""}
-                      {ls.subject}
-                    </div>
-                  )}
-                  <div className="mt-1 text-[11px] text-brand-muted/80">
-                    {ls?.sent_at
-                      ? `Sent ${fmt(ls.sent_at)}`
-                      : ls?.scheduled_at
-                      ? `Scheduled ${fmt(ls.scheduled_at)}`
-                      : fmt(t.created_at)}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+    <div>
+      <div className="mb-4 max-w-sm">
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name, company, or email…"
+          aria-label="Search threads by name, company, or email"
+          className="w-full rounded-lg border border-brand-line2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/40 focus:border-brand-blue"
+        />
+      </div>
+
+      {threads === null ? (
+        <div className="text-sm text-brand-muted py-10 text-center">Loading pipeline…</div>
+      ) : debounced && totalShown === 0 ? (
+        <div className="text-sm text-brand-muted py-10 text-center">
+          No threads match "{debounced}".
         </div>
-      ))}
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5 items-start">
+          {COLUMNS.map((col) => (
+            <div key={col.id} className="rounded-2xl bg-brand-panel2/60 border border-brand-line">
+              <div className="flex items-center gap-2 px-4 py-3">
+                <span className={`w-2 h-2 rounded-full ${col.accent}`} />
+                <span className="text-sm font-bold text-brand-ink flex-1">{col.title}</span>
+                <span className="text-xs font-semibold text-brand-muted">
+                  {lanes[col.id].length}
+                </span>
+              </div>
+              <div className="px-3 pb-3 space-y-2">
+                {lanes[col.id].length === 0 && (
+                  <div className="text-xs text-brand-muted text-center py-6">Nothing here</div>
+                )}
+                {lanes[col.id].map((t) => {
+                  const ls = t.latest_send;
+                  const chipKind = REPLIED.has(t.status) || t.status !== "active"
+                    ? t.status
+                    : ls?.status === "failed"
+                    ? "failed"
+                    : null;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => goTo(col.tab)}
+                      className="w-full text-left rounded-xl bg-brand-panel border border-brand-line p-3 hover:border-brand-blue/40 hover:shadow-sm transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-sm font-semibold text-brand-ink truncate">
+                          {t.company}
+                        </span>
+                        {chipKind && <Chip kind={chipKind} />}
+                      </div>
+                      <div className="text-xs text-brand-muted truncate">
+                        {t.recruiter_name !== "there" ? `${t.recruiter_name} · ` : ""}
+                        {t.email}
+                      </div>
+                      {ls && (
+                        <div className="mt-2 text-xs text-brand-muted truncate" title={ls.subject}>
+                          {ls.type === "followup" ? "↩ " : ""}
+                          {ls.subject}
+                        </div>
+                      )}
+                      <div className="mt-1 text-[11px] text-brand-muted/80">
+                        {ls?.sent_at
+                          ? `Sent ${fmt(ls.sent_at)}`
+                          : ls?.scheduled_at
+                          ? `Scheduled ${fmt(ls.scheduled_at)}`
+                          : fmt(t.created_at)}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
