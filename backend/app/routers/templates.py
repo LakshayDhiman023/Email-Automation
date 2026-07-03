@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models.schemas import TemplateCreate, TemplateOut
+from app.services import audit
 
 router = APIRouter(prefix="/templates", tags=["templates"])
 
@@ -29,6 +30,8 @@ def create_template(payload: TemplateCreate, db: Session = Depends(get_db)):
         ),
         payload.model_dump(),
     ).mappings().first()
+    audit.record(db, "template.create", entity="template", entity_id=row["id"],
+                detail={"name": payload.name})
     db.commit()
     return dict(row)
 
@@ -48,5 +51,7 @@ def update_template(template_id: int, payload: TemplateCreate,
     ).mappings().first()
     if not row:
         raise HTTPException(404, "template not found")
+    audit.record(db, "template.update", entity="template", entity_id=template_id,
+                detail={"name": payload.name})
     db.commit()
     return dict(row)
