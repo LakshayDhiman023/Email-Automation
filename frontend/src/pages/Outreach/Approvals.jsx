@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api";
 import { useToast } from "../../components/Toast";
-import { Badge, Button, Card, Empty, Input, fmt } from "../../components/ui";
+import { Badge, Button, Card, Empty, Input, Skeleton, fmt } from "../../components/ui";
 
 export default function Approvals({ refreshKey, onChange }) {
   const toast = useToast();
-  const [sends, setSends] = useState([]);
+  const [sends, setSends] = useState(null);
   const [open, setOpen] = useState(null);
   const [editing, setEditing] = useState(null); // send id being edited
   const [draft, setDraft] = useState({ subject: "", body: "" });
 
   async function load() {
-    setSends(await api.listSends("pending_approval"));
+    try {
+      setSends(await api.listSends("pending_approval"));
+    } catch {
+      setSends([]);
+    }
   }
   useEffect(() => {
     load();
@@ -43,6 +47,17 @@ export default function Approvals({ refreshKey, onChange }) {
     } catch (e) {
       toast(e.message, "error");
     }
+  }
+
+  if (sends === null) {
+    return (
+      <Card title="Pending approvals">
+        <div className="space-y-3" aria-busy="true" aria-label="Loading pending approvals">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
+      </Card>
+    );
   }
 
   return (
