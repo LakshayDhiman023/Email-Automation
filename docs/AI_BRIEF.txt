@@ -36,30 +36,40 @@ P6 LEARNING-GRADE CODE        features should stay readable and testable;
    prefer 100 well-placed lines over a new subsystem.
 
 -------------------------------------------------------------------------
-ARCHITECTURE (accurate as of 2026-07-03)
+ARCHITECTURE (accurate as of 2026-07-03, post-NFR-pass)
 -------------------------------------------------------------------------
 backend/   FastAPI + APScheduler (1-min tick) + SQLAlchemy text-SQL +
            psycopg3 -> Supabase Postgres (pgbouncer transaction pooler,
-           NullPool, no prepared statements). Routers: templates, outreach
-           (contacts/sends/threads), replies, stats, suppression, settings,
-           export, tasks, health. Services: outreach (render/schedule/
-           dispatch), scheduling (timezone/windows/working-days/holidays),
-           replies (Gmail polling), followups, guards (suppression/cap/
-           cooldown), gmail (API wrapper), app_settings (DB-backed config
-           cache). Migrations via scripts/migrate.py (schema_migrations
-           table). Tests: pytest (29, DB-free via pinned settings cache).
+           NullPool, no prepared statements). ALL routes under /api/v1
+           (except /health, unversioned for infra probes). Routers:
+           templates, outreach (contacts/sends/threads, full-text search),
+           replies, stats, suppression, settings (incl. setup-status),
+           audit, privacy (GDPR erasure), export, tasks, health. Services:
+           outreach (render/schedule/dispatch), scheduling (timezone/
+           windows/working-days/holidays), replies (Gmail polling),
+           followups, guards (suppression/cap/cooldown), gmail (API
+           wrapper), app_settings (DB-backed config cache), audit
+           (append-only action log). Structured JSON logging with
+           request-id/client-ip context (core/logging.py). Migrations via
+           scripts/migrate.py (001-006 applied). Tests: pytest (29,
+           DB-free via pinned settings cache; ~60% coverage on the
+           unit-testable pure-logic layer, see .coveragerc).
 frontend/  React + Vite + Tailwind. Dropbox-style design (#0061FE electric
            blue on white, pill buttons, hairline borders). Pages: Overview
            (stats + onboarding checklist), New email (compose with EXACT
-           live preview), Pipeline (read-only kanban of threads), Outreach
-           (approvals/scheduled/sent), Replies (needs-review + labeling),
-           Templates (editor with {variable} chips), Suppression, Settings.
-CI:        GitHub Actions — ruff + pytest (backend), eslint + build
-           (frontend). Makefile: install/migrate/seed/backend/frontend/
-           test/lint/build/check.
+           live preview), Pipeline (read-only kanban + debounced search),
+           Outreach (approvals/scheduled/sent), Replies (needs-review +
+           labeling), Templates (editor with {variable} chips),
+           Suppression (+ GDPR erasure card), Settings. Accessibility:
+           skip link, focus-visible states, aria-live toasts, aria-current
+           nav. Skeleton loading states (no blank-page flashes).
+CI:        GitHub Actions — ruff + pytest w/ coverage artifact (backend),
+           eslint + build (frontend). Makefile: install/migrate/seed/
+           backend/frontend/test/lint/build/check.
 
 DATA MODEL (simplified):
-  recruiters(email UNIQUE, name, company, last_contacted_at)
+  recruiters(email UNIQUE, name, company, last_contacted_at, search_vector
+             generated tsvector over name/company/email)
   threads(recruiter_id, template_id, status: active|replied_unlabeled|
           replied_positive|replied_negative|ooo|bounced|dead,
           gmail_thread_id, ooo_return_date)
@@ -71,6 +81,8 @@ DATA MODEL (simplified):
   templates(name, kind, subject, body, attach_resume, is_active)
   app_settings(singleton: timezone, 2 send windows, working_days,
                holiday mode+country, sender_name, signature)
+  audit_log(action, entity, entity_id, client_ip, request_id, detail
+            jsonb, created_at) — append-only, never updated/deleted
 
 -------------------------------------------------------------------------
 FEATURES THAT ALREADY EXIST (do not re-suggest)
@@ -91,15 +103,27 @@ FEATURES THAT ALREADY EXIST (do not re-suggest)
 * Safety rails: rolling 24h send cap (default 40), 30-day per-contact
   cooldown (force-overridable in UI), hard suppression list, retry with
   attempt audit, orphaned-send recovery, one-open-thread-per-contact rule.
-* Works on sleeping free hosts: external cron hits POST /tasks/run.
+* Works on sleeping free hosts: external cron hits POST /api/v1/tasks/run.
 * Onboarding checklist on Overview driven by live GET /settings/setup.
-* Pipeline kanban (read-only by design — approval stays in its own flow).
+* Pipeline kanban (read-only by design — approval stays in its own flow),
+  with a debounced full-text search box over contact name/company/email.
 * CSV export (header-token-guarded), metrics endpoint (reply/bounce rates
   per distinct recipient), per-template resume attachment.
-* Security (OWASP pass done): X-API-Token auth with per-IP failed-attempt
+* Security (OWASP pass): X-API-Token auth with per-IP failed-attempt
   throttling + logging, security headers, 1MB body cap, docs disabled in
   production, header-injection rejection (CR/LF), bounded inputs and list
   limits, parameterized SQL throughout, fail-closed export.
+* API versioned under /api/v1 (health excluded). Structured JSON logs with
+  request-id/client-ip. Append-only audit_log for every state-changing
+  action (approve/cancel/close/suppress/settings/template changes),
+  readable via GET /api/v1/audit.
+* GDPR-style erasure: DELETE /api/v1/privacy/contacts/{email} permanently
+  deletes a contact + all derived threads/sends/replies and suppresses
+  the address. Distinct from suppression alone (which keeps history).
+* Accessibility: skip link, focus-visible states everywhere, aria-live
+  toast announcements, aria-current nav, skeleton loading states (no
+  blank-page flashes). Test coverage reporting in CI (pytest-cov, HTML
+  artifact) — currently ~60% on the pure-logic layer.
 
 -------------------------------------------------------------------------
 ALREADY EVALUATED AND REJECTED — DO NOT PROPOSE AGAIN
@@ -113,8 +137,12 @@ ALREADY EVALUATED AND REJECTED — DO NOT PROPOSE AGAIN
 * 3D/gimmick UI. Multi-tenant SaaS, billing, teams.
 * Declined by the owner after evaluation (don't re-pitch without a new
   angle): Open-in-Gmail deep links, MX-record email verification,
-  template spam-lint, contact timeline drawer, inline full-reply reading,
-  JSON backup/restore.
+  template spam-lint, contact timeline drawer, {booking_link} integration.
+* PARKED, not declined (mocked in docs/artifact.html, awaiting sign-off —
+  a new pitch could still tip these one way or the other): inline full-
+  reply reading (fetch from Gmail on demand, never stored), JSON backup/
+  restore (additive-only import). Also parked: light/dark/high-contrast
+  theme system (mocked with a live toggle, WCAG-checked palettes).
 
 -------------------------------------------------------------------------
 ALREADY ON THE ROADMAP (suggest only concrete improvements to these)
