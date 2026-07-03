@@ -10,7 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
-from app.services import guards
+from app.services import audit, guards
 
 router = APIRouter(prefix="/suppression", tags=["suppression"])
 
@@ -33,16 +33,16 @@ def list_suppressions(limit: int = Query(default=500, ge=1, le=5000),
 @router.post("", status_code=201)
 def add_suppression(payload: SuppressIn, db: Session = Depends(get_db)):
     guards.suppress(db, payload.email, reason="manual", note=payload.note)
+    audit.record(db, "suppression.add", entity="suppression", entity_id=payload.email.lower())
     db.commit()
     return {"email": payload.email.lower(), "reason": "manual"}
 
 
 @router.delete("/{email}", status_code=204)
 def remove_suppression(email: str, db: Session = Depends(get_db)):
-    res = db.execute(
-        text("DELETE FROM suppression_list WHERE email=:e"),
-        {"e": email.strip().lower()},
-    )
-    db.commit()
+    e = email.strip().lower()
+    res = db.execute(text("DELETE FROM suppression_list WHERE email=:e"), {"e": e})
     if res.rowcount == 0:
         raise HTTPException(404, "not on suppression list")
+    audit.record(db, "suppression.remove", entity="suppression", entity_id=e)
+    db.commit()
