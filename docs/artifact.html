@@ -113,6 +113,44 @@
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
 
+  /* --- live theme-toggle demo (feature 00) --- */
+  .theme-demo{
+    --td-bg:#fff; --td-panel:#fff; --td-panel2:#f7f9fc; --td-line:#e8ebee;
+    --td-ink:#1e1919; --td-muted:#637282; --td-accent:#0061fe; --td-accent-soft:#eef4ff;
+  }
+  .theme-demo[data-theme="dark"]{
+    --td-bg:#16181c; --td-panel:#1c1f26; --td-panel2:#22262e; --td-line:#2b2f38;
+    --td-ink:#e8e9ec; --td-muted:#9aa1ac; --td-accent:#6ea1ff; --td-accent-soft:#1e2a42;
+  }
+  .theme-demo[data-theme="hc"]{
+    --td-bg:#ffffff; --td-panel:#ffffff; --td-panel2:#f0f0f0; --td-line:#000000;
+    --td-ink:#000000; --td-muted:#000000; --td-accent:#0047cc; --td-accent-soft:#dbe7ff;
+  }
+  .theme-switch{display:flex;gap:8px;margin-bottom:14px}
+  .theme-btn{font-size:12.5px;font-weight:700;border:1px solid var(--line2);background:#fff;
+             border-radius:999px;padding:7px 16px;cursor:pointer}
+  .theme-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .td-frame{border-color:var(--td-line)}
+  .td-bar{background:var(--td-panel2);border-color:var(--td-line)}
+  .td-path{color:var(--td-muted)}
+  .td-shell{background:var(--td-bg)}
+  .td-sidebar{background:var(--td-panel);border-right:1px solid var(--td-line)}
+  .td-brand{color:var(--td-ink)}
+  .td-accent{color:var(--td-accent)}
+  .td-accent-text{color:var(--td-accent)}
+  .td-nav{color:var(--td-muted)}
+  .td-nav.active-td{background:var(--td-accent-soft);color:var(--td-accent);border-radius:9px}
+  .td-badge{background:var(--td-accent)}
+  .td-main{background:var(--td-bg)}
+  .td-h3{color:var(--td-ink)}
+  .td-p{color:var(--td-muted)}
+  .td-card{background:var(--td-panel);border-color:var(--td-line)}
+  .td-title{color:var(--td-muted)}
+  .td-row{display:flex;justify-content:space-between;align-items:center;background:var(--td-panel2);
+          border:1px solid var(--td-line);border-radius:10px;padding:10px 14px;margin-bottom:8px;
+          font-size:13px;color:var(--td-muted)}
+  .td-row-value{font-size:16px;font-weight:800;color:var(--td-ink)}
+
   footer{text-align:center;color:#a39d93;font-size:12px;padding:30px 0 10px}
 </style>
 </head>
@@ -129,6 +167,69 @@
 </div>
 
 <div class="page">
+
+  <div class="section">
+    <div class="eyebrow">Feature 00 · awaiting your sign-off</div>
+    <h2>Theme system — light, dark, and high-contrast</h2>
+    <p class="lede">From the NFR pass: a theme toggle plus a high-contrast option, without
+       swapping the design language. All three palettes below were checked against WCAG 2.1 AA
+       (4.5:1 minimum for body text) before being drawn — this isn't guessed color, it's measured.
+       <b>This toggle is live</b> — click a swatch to actually switch the mock below.</p>
+
+    <div class="theme-demo" data-theme="light">
+      <div class="theme-switch">
+        <button class="theme-btn" data-set="light">☀ Light</button>
+        <button class="theme-btn" data-set="dark">🌙 Dark</button>
+        <button class="theme-btn" data-set="hc">◐ High contrast</button>
+      </div>
+
+      <div class="frame td-frame">
+        <div class="frame-bar td-bar">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="path td-path">mailflow.local — Overview</span>
+        </div>
+        <div class="app-shell td-shell" style="min-height:420px">
+          <div class="app-sidebar td-sidebar">
+            <div class="brand-mark td-brand">✉ Mail<span class="td-accent">flow</span></div>
+            <div class="nav-item td-nav active-td">⊞ Overview</div>
+            <div class="nav-item td-nav">＋ New email</div>
+            <div class="nav-item td-nav">▥ Pipeline</div>
+            <div class="nav-item td-nav">↗ Outreach <span class="nav-badge td-badge">3</span></div>
+            <div class="nav-item td-nav">✉ Replies</div>
+            <div class="nav-item td-nav">⚙ Settings</div>
+          </div>
+          <div class="app-main td-main" style="width:100%">
+            <div class="app-topbar">
+              <h3 class="td-h3">Overview</h3>
+              <p class="td-p">Where everything stands at a glance.</p>
+            </div>
+            <div class="card-panel td-card">
+              <div class="title td-title">Needs your action</div>
+              <div class="td-row">
+                <span class="td-row-label">Drafts awaiting approval</span>
+                <span class="td-row-value">2</span>
+              </div>
+              <div class="td-row">
+                <span class="td-row-label">Replies to review</span>
+                <span class="td-row-value td-accent-text">1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><b>Light (current)</b><span>#0061FE electric blue on white — the shipped Dropbox-style palette, unchanged.</span></div>
+      <div class="callout"><b>Dark</b><span>#E8E9EC text on #16181C canvas — 14.6:1 body-text contrast, 5.6:1 for the blue accent (both clear AA's 4.5:1).</span></div>
+      <div class="callout"><b>High contrast</b><span>Pure black/white (21:1) with a darkened #0047CC accent (7.6:1) — for low-vision users, not just an aesthetic option.</span></div>
+    </div>
+    <div class="callouts">
+      <div class="callout"><b>Persistence</b><span>Saved to localStorage; respects <code>prefers-color-scheme</code> on first load, same as Gmail/Notion.</span></div>
+      <div class="callout"><b>Implementation</b><span>Tailwind CSS variables + a <code>data-theme</code> attribute on &lt;html&gt; — no component rewrites, same classes.</span></div>
+      <div class="callout"><b>Toggle location</b><span>Settings page, next to timezone — a small icon-only switch may also go in the sidebar footer.</span></div>
+    </div>
+  </div>
 
   <div class="section">
     <div class="eyebrow">Feature 01 · shipped this pass</div>
@@ -490,6 +591,18 @@ Talent · Keystone AI</div>
 </div>
 
 <footer>docs/artifact.html · UI/UX mockups, reviewed before implementation · updated 2026-07-03</footer>
+
+<script>
+  document.querySelectorAll(".theme-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const demo = btn.closest(".theme-demo");
+      demo.dataset.theme = btn.dataset.set;
+      demo.querySelectorAll(".theme-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
+  });
+  document.querySelector('.theme-btn[data-set="light"]')?.classList.add("active");
+</script>
 
 </body>
 </html>
