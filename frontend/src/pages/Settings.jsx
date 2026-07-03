@@ -133,7 +133,7 @@ export default function Settings() {
 
         <div className="mt-4">
           <span className="block text-sm font-medium text-brand-ink/80 mb-1.5">Working days</span>
-          <div className="flex gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             {DAYS.map((d) => {
               const on = s.working_days.includes(d.n);
               return (
