@@ -3,7 +3,13 @@ import { api } from "../../api";
 import { Badge, Card, Empty, Skeleton, fmt } from "../../components/ui";
 
 // Reused for both the Scheduled Queue (status=approved) and Sent Log (status=sent).
-export default function SendList({ title, status, refreshKey, timeField = "scheduled_at" }) {
+export default function SendList({
+  title,
+  status,
+  refreshKey,
+  timeField = "scheduled_at",
+  emptyText = "Nothing here yet.",
+}) {
   const [sends, setSends] = useState(null);
 
   useEffect(() => {
@@ -24,7 +30,7 @@ export default function SendList({ title, status, refreshKey, timeField = "sched
 
   return (
     <Card title={`${title} (${sends.length})`}>
-      {sends.length === 0 && <Empty>Nothing here yet.</Empty>}
+      {sends.length === 0 && <Empty>{emptyText}</Empty>}
       <div className="space-y-2">
         {sends.map((s) => (
           <div
