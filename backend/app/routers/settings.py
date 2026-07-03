@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import get_db
-from app.services import app_settings
+from app.services import app_settings, audit
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -89,6 +89,9 @@ def update_settings(payload: SettingsIn, db: Session = Depends(get_db)):
         ),
         payload.model_dump(),
     )
+    # timezone/windows/etc are policy, not secrets — safe to record verbatim
+    audit.record(db, "settings.update", entity="app_settings", entity_id=1,
+                detail={"timezone": payload.timezone, "holiday_mode": payload.holiday_mode})
     db.commit()
     app_settings.invalidate()  # scheduling picks up the change immediately
     return dict(
