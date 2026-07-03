@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../api";
-import { fmt } from "../components/ui";
+import { fmt, Skeleton } from "../components/ui";
 
 // Kanban pipeline of every thread, bucketed by where it stands in the send
 // lifecycle. Read-only by design (P3: state changes happen through the explicit
@@ -88,7 +88,19 @@ export default function Board({ refreshKey, goTo }) {
       </div>
 
       {threads === null ? (
-        <div className="text-sm text-brand-muted py-10 text-center">Loading pipeline…</div>
+        <div
+          className="grid gap-4 md:grid-cols-2 xl:grid-cols-5 items-start"
+          aria-busy="true"
+          aria-label="Loading pipeline"
+        >
+          {COLUMNS.map((col) => (
+            <div key={col.id} className="rounded-2xl bg-brand-panel2/60 border border-brand-line p-3 space-y-2">
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-16 w-full rounded-xl" />
+              <Skeleton className="h-16 w-full rounded-xl" />
+            </div>
+          ))}
+        </div>
       ) : debounced && totalShown === 0 ? (
         <div className="text-sm text-brand-muted py-10 text-center">
           No threads match "{debounced}".
