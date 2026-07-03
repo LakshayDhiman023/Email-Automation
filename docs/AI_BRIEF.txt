@@ -1,0 +1,143 @@
+MAILFLOW — PROJECT BRIEF FOR AI ASSISTANTS
+=========================================================================
+Purpose of this document: give an AI enough accurate context to propose
+LOGICAL, NON-DUPLICATE feature additions. Read the constraints and the
+"already rejected" list carefully before suggesting anything.
+
+-------------------------------------------------------------------------
+WHAT THE PRODUCT IS
+-------------------------------------------------------------------------
+Mailflow is a free, self-hostable, single-user email-outreach automation
+tool. One person (job-seeker, indie founder, researcher) clones the repo,
+plugs in their own Supabase database and Gmail OAuth credentials, deploys
+on a free host, and sends personalized, template-driven outreach emails
+AS THEMSELVES — with every email individually approved by the human
+before it leaves. It is deliberately NOT a bulk mailer, NOT multi-tenant
+SaaS, and NOT a growth-hacking tool.
+
+Dual goal: a genuinely usable product AND a readable learning/portfolio
+codebase (FastAPI + React, real tests, migrations, CI).
+
+-------------------------------------------------------------------------
+HARD CONSTRAINTS — every suggestion must pass ALL SIX
+-------------------------------------------------------------------------
+P1 FREE FOREVER FOR ONE USER  every dependency must have a $0 tier
+   (current stack: Supabase free, Gmail API, free web hosts, cron-job.org).
+P2 SELF-HOSTED & OWNED        user's DB, user's OAuth app, user's tokens.
+   Single-tenant by design. No vendor lock-in, no phoning home.
+P3 HUMAN-IN-THE-LOOP          nothing is ever sent without explicit
+   per-email approval (pending_approval -> approved -> sent). Any feature
+   that auto-sends, auto-replies, or bypasses review is dead on arrival.
+P4 DELIVERABILITY IS SACRED   nothing that risks the user's Gmail account:
+   no volume features, no SMTP probing, no warm-up tricks.
+P5 RESPECT THE CHANNEL        no tracking pixels, no scraping-and-spraying,
+   no ToS-violating integrations.
+P6 LEARNING-GRADE CODE        features should stay readable and testable;
+   prefer 100 well-placed lines over a new subsystem.
+
+-------------------------------------------------------------------------
+ARCHITECTURE (accurate as of 2026-07-03)
+-------------------------------------------------------------------------
+backend/   FastAPI + APScheduler (1-min tick) + SQLAlchemy text-SQL +
+           psycopg3 -> Supabase Postgres (pgbouncer transaction pooler,
+           NullPool, no prepared statements). Routers: templates, outreach
+           (contacts/sends/threads), replies, stats, suppression, settings,
+           export, tasks, health. Services: outreach (render/schedule/
+           dispatch), scheduling (timezone/windows/working-days/holidays),
+           replies (Gmail polling), followups, guards (suppression/cap/
+           cooldown), gmail (API wrapper), app_settings (DB-backed config
+           cache). Migrations via scripts/migrate.py (schema_migrations
+           table). Tests: pytest (29, DB-free via pinned settings cache).
+frontend/  React + Vite + Tailwind. Dropbox-style design (#0061FE electric
+           blue on white, pill buttons, hairline borders). Pages: Overview
+           (stats + onboarding checklist), New email (compose with EXACT
+           live preview), Pipeline (read-only kanban of threads), Outreach
+           (approvals/scheduled/sent), Replies (needs-review + labeling),
+           Templates (editor with {variable} chips), Suppression, Settings.
+CI:        GitHub Actions — ruff + pytest (backend), eslint + build
+           (frontend). Makefile: install/migrate/seed/backend/frontend/
+           test/lint/build/check.
+
+DATA MODEL (simplified):
+  recruiters(email UNIQUE, name, company, last_contacted_at)
+  threads(recruiter_id, template_id, status: active|replied_unlabeled|
+          replied_positive|replied_negative|ooo|bounced|dead,
+          gmail_thread_id, ooo_return_date)
+  sends(thread_id, type: initial|followup, subject, body, scheduled_at,
+        sent_at, status: pending_approval|approved|sending|sent|failed|
+        cancelled, attempts, error, gmail_message_id)
+  replies(thread_id, snippet, received_at, label)
+  suppression_list(email UNIQUE, reason, note)
+  templates(name, kind, subject, body, attach_resume, is_active)
+  app_settings(singleton: timezone, 2 send windows, working_days,
+               holiday mode+country, sender_name, signature)
+
+-------------------------------------------------------------------------
+FEATURES THAT ALREADY EXIST (do not re-suggest)
+-------------------------------------------------------------------------
+* Dynamic templates: any {variable} in subject/body; the compose form
+  auto-generates one input per variable. Built-ins: {name} (blank ->
+  "there"), {company}, {signature} (from settings), {recruiter_name} alias.
+  Blank optional variables drop their whole body line at render.
+* Exact live preview in compose (client port of the server renderer).
+* Approval pipeline with edit-before-send, cancel, thread close.
+* Scheduling: user-configurable timezone, two daily send windows, working
+  days, optional country-holiday skipping; follow-up after N working days
+  (one follow-up per thread, by design so far).
+* Reply detection via Gmail thread polling (15-min cycle) with manual
+  labeling: positive / negative / out-of-office (with return-date that
+  reschedules the follow-up). Bounce detection (sender/subject heuristics,
+  never body) -> auto-suppression.
+* Safety rails: rolling 24h send cap (default 40), 30-day per-contact
+  cooldown (force-overridable in UI), hard suppression list, retry with
+  attempt audit, orphaned-send recovery, one-open-thread-per-contact rule.
+* Works on sleeping free hosts: external cron hits POST /tasks/run.
+* Onboarding checklist on Overview driven by live GET /settings/setup.
+* Pipeline kanban (read-only by design — approval stays in its own flow).
+* CSV export (header-token-guarded), metrics endpoint (reply/bounce rates
+  per distinct recipient), per-template resume attachment.
+* Security (OWASP pass done): X-API-Token auth with per-IP failed-attempt
+  throttling + logging, security headers, 1MB body cap, docs disabled in
+  production, header-injection rejection (CR/LF), bounded inputs and list
+  limits, parameterized SQL throughout, fail-closed export.
+
+-------------------------------------------------------------------------
+ALREADY EVALUATED AND REJECTED — DO NOT PROPOSE AGAIN
+-------------------------------------------------------------------------
+* LinkedIn / X / Instagram DM automation (all three ToS-ban cold DMs).
+* Embedding gmail.com in the app (Google sends X-Frame-Options:
+  SAMEORIGIN; circumvention = ToS violation).
+* Rebuilding Calendly (Cal.com is open-source; a booking engine is a
+  second product). Even the light {booking_link} integration was declined.
+* Open/click tracking pixels; inbox warm-up networks (banned by Google).
+* 3D/gimmick UI. Multi-tenant SaaS, billing, teams.
+* Declined by the owner after evaluation (don't re-pitch without a new
+  angle): Open-in-Gmail deep links, MX-record email verification,
+  template spam-lint, contact timeline drawer, inline full-reply reading,
+  JSON backup/restore.
+
+-------------------------------------------------------------------------
+ALREADY ON THE ROADMAP (suggest only concrete improvements to these)
+-------------------------------------------------------------------------
+* Multi-step follow-up sequences (N steps per thread, each approved).
+* One-command setup script (clone -> running in 15 minutes).
+* AI reply drafting via LOCAL Ollama (drafts only; human approves).
+* Template analytics / A-B compare; CSV contact import; daily digest.
+* Outlook/SMTP provider abstraction; optional login for public deploys.
+
+-------------------------------------------------------------------------
+WHAT WE WANT FROM YOU
+-------------------------------------------------------------------------
+Propose feature additions that are LOGICAL EXTENSIONS of the core loop
+(find contact -> compose from template -> approve -> send in-window ->
+detect reply -> label -> follow up or close) and that the lists above
+don't already cover or forbid. For each suggestion provide:
+  1. Name + one-sentence pitch.
+  2. The concrete user problem it solves inside the core loop.
+  3. Why it passes P1-P6 (call out the riskiest principle explicitly).
+  4. Rough effort (S: <1 day, M: 1-3 days, L: >3 days) and which parts
+     of the architecture above it touches.
+  5. The strongest argument AGAINST building it (steelman the skip).
+Rank your suggestions by value-per-effort. Quality over quantity —
+three well-reasoned ideas beat ten shallow ones.
+=========================================================================
