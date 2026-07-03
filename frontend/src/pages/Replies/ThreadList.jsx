@@ -3,7 +3,7 @@ import { api } from "../../api";
 import { Badge, Card, Empty, Skeleton, fmt } from "../../components/ui";
 
 // Reused for Attention (replied_positive), Dead (replied_negative), OOO, etc.
-export default function ThreadList({ title, status, refreshKey }) {
+export default function ThreadList({ title, status, refreshKey, emptyText = "Nothing here yet." }) {
   const [threads, setThreads] = useState(null);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function ThreadList({ title, status, refreshKey }) {
 
   return (
     <Card title={`${title} (${threads.length})`}>
-      {threads.length === 0 && <Empty>None.</Empty>}
+      {threads.length === 0 && <Empty>{emptyText}</Empty>}
       <div className="space-y-2">
         {threads.map((t) => (
           <div
