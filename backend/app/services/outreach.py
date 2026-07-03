@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import SessionLocal
-from app.services import app_settings, gmail, guards, scheduling
+from app.services import app_settings, audit, gmail, guards, scheduling
 
 log = logging.getLogger("outreach")
 _settings = get_settings()
@@ -164,6 +164,7 @@ def approve_send(db: Session, send_id: int) -> None:
     )
     if res.rowcount == 0:
         raise ValueError(f"send {send_id} not found or not pending_approval")
+    audit.record(db, "send.approve", entity="send", entity_id=send_id)
     db.commit()
 
 
@@ -207,11 +208,13 @@ def edit_send(db: Session, send_id: int, *, subject: str | None = None,
 
 def cancel_send(db: Session, send_id: int) -> None:
     """Cancel a not-yet-sent send."""
-    db.execute(
+    res = db.execute(
         text("UPDATE sends SET status='cancelled' WHERE id=:id AND status IN "
              "('pending_approval','approved')"),
         {"id": send_id},
     )
+    if res.rowcount:
+        audit.record(db, "send.cancel", entity="send", entity_id=send_id)
     db.commit()
 
 
@@ -233,6 +236,7 @@ def close_thread(db: Session, thread_id: int) -> None:
         text("UPDATE threads SET status='dead', updated_at=now() WHERE id=:tid"),
         {"tid": thread_id},
     )
+    audit.record(db, "thread.close", entity="thread", entity_id=thread_id)
     db.commit()
 
 
