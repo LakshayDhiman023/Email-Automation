@@ -100,3 +100,29 @@ def update_settings(payload: SettingsIn, db: Session = Depends(get_db)):
 def list_timezones() -> list[str]:
     """All IANA timezone names, for the Settings-page picker."""
     return pytz.common_timezones
+
+
+@router.get("/setup")
+def setup_status(db: Session = Depends(get_db)) -> dict:
+    """Live onboarding state for the Overview checklist — real checks, not flags."""
+    env = get_settings()
+    gmail_connected = bool(
+        env.gmail_client_id and env.gmail_client_secret and env.gmail_refresh_token
+    )
+    row = db.execute(
+        text("SELECT sender_name FROM app_settings WHERE id=1")
+    ).first()
+    identity_set = bool(row and (row[0] or "").strip())
+    template_created = bool(
+        db.execute(text("SELECT 1 FROM templates WHERE is_active LIMIT 1")).first()
+    )
+    first_send_sent = bool(
+        db.execute(text("SELECT 1 FROM sends WHERE status='sent' LIMIT 1")).first()
+    )
+    steps = {
+        "gmail_connected": gmail_connected,
+        "identity_set": identity_set,
+        "template_created": template_created,
+        "first_send_sent": first_send_sent,
+    }
+    return {**steps, "complete": all(steps.values())}
