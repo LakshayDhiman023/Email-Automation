@@ -315,19 +315,181 @@ Ved Meena</div>
   </div>
 
   <div class="section">
-    <div class="eyebrow">Next up · for review, not yet built</div>
-    <h2>Candidates waiting on your sign-off here first</h2>
-    <p class="lede">Per your instruction, these get mocked in this file and shown to you before any code is written.</p>
+    <div class="eyebrow">Feature 03 · awaiting your sign-off</div>
+    <h2>Onboarding checklist — on the Overview page</h2>
+    <p class="lede">A new card at the top of Overview, driven by real state from a new
+       <code>GET /setup/status</code> endpoint. It shows only while setup is incomplete, then a slim
+       "all set" line you can dismiss. Serves the "clone → first email in 15 minutes" goal.</p>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="path">mailflow.local — Overview</span>
+      </div>
+      <div class="app-shell" style="min-height:auto">
+        <div class="app-main" style="width:100%">
+          <div class="app-topbar">
+            <h3>Overview</h3>
+            <p>Where everything stands at a glance.</p>
+          </div>
+
+          <div class="card-panel" style="border-color:#bcd4ff;background:linear-gradient(180deg,#f5f9ff,#fff)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <span style="font-size:13px;font-weight:800">Finish setting up Mailflow</span>
+              <span style="font-size:11.5px;font-weight:700;color:var(--blue)">2 of 4 done</span>
+            </div>
+            <div style="height:6px;border-radius:999px;background:var(--line);overflow:hidden;margin-bottom:14px">
+              <div style="width:50%;height:100%;background:var(--blue);border-radius:999px"></div>
+            </div>
+            <div style="display:grid;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                <span style="width:18px;height:18px;border-radius:50%;background:var(--green-bg);color:var(--green-fg);font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">✓</span>
+                <span style="color:var(--muted);text-decoration:line-through">Connect Gmail</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                <span style="width:18px;height:18px;border-radius:50%;background:var(--green-bg);color:var(--green-fg);font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">✓</span>
+                <span style="color:var(--muted);text-decoration:line-through">Set your name &amp; signature</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                <span style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line2);display:inline-flex"></span>
+                <span style="font-weight:600;flex:1">Create your first template</span>
+                <span style="font-size:12px;font-weight:700;color:var(--blue)">Go to Templates →</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+                <span style="width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line2);display:inline-flex"></span>
+                <span style="font-weight:600;flex:1">Queue &amp; approve your first email</span>
+                <span style="font-size:12px;font-weight:700;color:var(--blue)">New email →</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;opacity:.55">
+            <div class="card-panel"><div class="title">Needs your action</div>
+              <div style="font-size:12.5px;color:var(--muted)">Existing Overview cards stay exactly as they are, below the checklist.</div>
+            </div>
+            <div class="card-panel"><div class="title">Pipeline</div>
+              <div style="font-size:12.5px;color:var(--muted)">Unchanged.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="callouts">
-      <div class="callout"><b>Onboarding checklist</b><span>Card tracking Gmail connected → identity set → first template → first send.</span></div>
-      <div class="callout"><b>Toast polish</b><span>Replace the one remaining alert() (CSV export error) with the existing toast system.</span></div>
-      <div class="callout"><b>Live updates</b><span>Swap 20s polling for server-sent events so replies/sends flip instantly.</span></div>
+      <div class="callout"><b>Detection is real, not guessed</b><span>Each item checks live state: Gmail env vars present, sender_name set, ≥1 active template, ≥1 sent send.</span></div>
+      <div class="callout"><b>Each step is a shortcut</b><span>The blue link jumps straight to the tab where that step is completed.</span></div>
+      <div class="callout"><b>Gets out of the way</b><span>Card disappears once all 4 are done — Overview returns to normal.</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Feature 04 · awaiting your sign-off</div>
+    <h2>Inline reply reading — full message, on demand</h2>
+    <p class="lede">Needs Review currently shows only Gmail's ~90-char snippet, so you end up opening
+       Gmail to actually read the reply before labeling it. "Read full reply" fetches the complete
+       message text from Gmail into an expander — label with full context, without leaving the app.</p>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="path">mailflow.local — Replies · Needs review</span>
+      </div>
+      <div class="app-shell" style="min-height:auto">
+        <div class="app-main" style="width:100%">
+          <div class="card-panel">
+            <div class="title">Needs review (1)</div>
+            <div style="border:1px solid var(--line);border-radius:12px;padding:14px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+                <div>
+                  <div style="font-size:13.5px;font-weight:700">Keystone AI — Devika</div>
+                  <div style="font-size:12px;color:var(--muted)">devika@keystone.ai · replied Jun 29</div>
+                </div>
+                <span class="chip rev">Needs review</span>
+              </div>
+              <div style="margin-top:10px;font-size:12.5px;color:var(--muted);font-style:italic">
+                "Thanks for reaching out! We'd love to chat — are you free some time next week for a…"
+              </div>
+
+              <!-- the new expander -->
+              <div style="margin-top:10px;border-left:3px solid var(--blue);background:var(--panel2);border-radius:0 10px 10px 0;padding:12px 14px">
+                <div style="font-size:10.5px;font-weight:800;color:var(--blue);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Full reply · fetched from Gmail</div>
+                <div style="font-size:12.5px;line-height:1.65;white-space:pre-wrap">Thanks for reaching out! We'd love to chat — are you free some time next week for a 30-minute intro call?
+
+Our platform team is growing and your Supabase + FastAPI experience is exactly the stack we run.
+
+Best,
+Devika Rao
+Talent · Keystone AI</div>
+              </div>
+
+              <div style="display:flex;gap:8px;margin-top:12px">
+                <span style="font-size:12px;font-weight:700;color:var(--blue)">▲ Hide full reply</span>
+                <span style="flex:1"></span>
+                <span class="chip pos" style="font-size:11px;padding:5px 12px">Label positive</span>
+                <span class="chip neg" style="font-size:11px;padding:5px 12px">Negative</span>
+                <span class="chip ooo" style="font-size:11px;padding:5px 12px">Out of office</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><b>Fetched on click, never stored</b><span>New <code>GET /replies/{id}/full</code> pulls the body from Gmail live — the DB keeps storing only the snippet (nothing sensitive at rest).</span></div>
+      <div class="callout"><b>Read-only scope already covers it</b><span>Uses the existing gmail.readonly scope — no new permissions.</span></div>
+      <div class="callout"><b>Label without leaving</b><span>The existing label buttons sit right under the full text.</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Feature 05 · awaiting your sign-off</div>
+    <h2>Backup &amp; restore — your data is portable</h2>
+    <p class="lede">A self-hosted tool should never hold data hostage. One card in Settings: download
+       everything as a single JSON file, or restore one into a fresh deployment (e.g. after moving
+       Supabase projects).</p>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="path">mailflow.local — Settings</span>
+      </div>
+      <div class="app-shell" style="min-height:auto">
+        <div class="app-main" style="width:100%">
+          <div class="compose-grid">
+            <div class="card-panel">
+              <div class="title">Backup &amp; restore</div>
+              <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px">
+                Everything in one file: templates, contacts, threads, sends, replies,
+                suppression list, and settings.
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <span class="btn" style="margin-top:0">Download backup (.json)</span>
+                <span class="btn" style="margin-top:0;background:#fff;color:var(--ink);border:1px solid var(--line2)">Restore from file…</span>
+              </div>
+              <div style="margin-top:12px;font-size:11.5px;color:var(--muted)">
+                Last backup: never · restoring only ADDS missing rows, it never deletes.
+              </div>
+            </div>
+            <div class="card-panel" style="opacity:.55">
+              <div class="title">Your identity</div>
+              <div style="font-size:12.5px;color:var(--muted)">Existing Settings cards unchanged — the new card slots in below them.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><b>Additive restore only</b><span>Import inserts what's missing (matched by email / template name); it never overwrites or deletes. No "restore wiped my data" surprises.</span></div>
+      <div class="callout"><b>Guarded like the CSV</b><span>Backup download requires the export token (same header-only rule); restore requires the API token.</span></div>
+      <div class="callout"><b>Why JSON, not SQL</b><span>Survives schema changes across versions — the importer maps fields, not raw rows.</span></div>
     </div>
   </div>
 
 </div>
 
-<footer>docs/artifact.html · UI/UX mockups, reviewed before implementation · updated 2026-07-02</footer>
+<footer>docs/artifact.html · UI/UX mockups, reviewed before implementation · updated 2026-07-03</footer>
 
 </body>
 </html>
