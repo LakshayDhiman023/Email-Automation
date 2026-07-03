@@ -1,94 +1,129 @@
-# Recruiter Outreach Automation Platform
+# ✉ Mailflow
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=white)
 ![Postgres](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white)
+![License](https://img.shields.io/badge/license-TBD-lightgrey)
 
-A personal, $0, always-up tool to automate recruiter outreach: add a recruiter (name, company,
-email), pick a template, approve the generated email, and the system schedules + sends it from
-your own Gmail at human-looking weekday windows — then tracks replies and follow-ups. Timezone,
-send windows and working days are configurable in-app, so any region can use it.
+A free, self-hostable email-outreach automation tool. Clone it, connect your own
+Supabase database and Gmail account, and it sends personalized, template-driven
+emails **as you** — with every single email reviewed and approved by a human
+before it leaves. Built for job hunts, cold outreach, and similar one-person
+campaigns; not a bulk mailer, not multi-tenant SaaS.
 
 ## What it does
 
-- **Add a recruiter** → choose a **template** (e.g. official company / startup / generic) →
-  it fills in `{recruiter_name}` / `{company}` and attaches your resume.
-- **Approve at add-time** → the draft is queued, you never send anything unreviewed.
-- **Scheduled sending** (your timezone, chosen working days, optional public-holiday skip):
-  - Two windows per day: **9–10 AM** and **2–3 PM**, each send at its own random minute.
-  - Added before 9 AM → today 9–10; before 2 PM → today 2–3; after that → next working day 9–10.
-- **Reply detection** → polls Gmail for replies on tracked threads (presence only), auto-pauses
-  follow-ups, and surfaces the thread in **Needs Review**.
-- **Manual labeling** → you mark each reply **Positive** / **Negative** / **Out of Office**.
-  - Out of Office → enter the recruiter's return date → follow-up reschedules to then.
-- **Follow-ups** → if no reply after 5 working days, a follow-up is queued for approval.
+- **Dynamic templates** — write a subject/body with any `{variable}` you want
+  (`{role}`, `{hr_name}`, anything). The compose screen auto-generates one input
+  per variable, plus a live preview that is byte-for-byte what will actually send.
+- **Human-in-the-loop always** — every email sits in `pending_approval` until you
+  approve it. Edit the draft, cancel it, or close the whole thread at any point.
+- **Configurable scheduling** — your timezone, two daily send windows, working
+  days, and optional country-holiday skipping, all set from the Settings page
+  (no hardcoded region). Follow-ups queue automatically after N working days.
+- **Reply handling** — polls Gmail for replies on tracked threads and surfaces
+  them in Needs Review; label each **Positive / Negative / Out of Office** (OOO
+  reschedules the follow-up to the stated return date). Bounces auto-suppress.
+- **Deliverability guardrails** — rolling 24h send cap, per-contact cooldown
+  (overridable), a hard suppression list, retry with an audit trail, and
+  one-open-thread-per-contact so you never double-email someone.
+- **Pipeline board** — a read-only kanban of every thread by lifecycle stage,
+  with full-text search across name/company/email.
+- **Onboarding checklist** — a live progress card on Overview that tracks real
+  setup state (Gmail connected, identity set, first template, first send) and
+  disappears once you're fully set up.
+- **GDPR-style erasure** — permanently delete a contact and everything derived
+  from them (threads/sends/replies) on request, distinct from suppression alone.
+- **Audit trail** — every approval, cancellation, suppression change, and
+  settings update is recorded in an append-only log with who/when/from-where.
+- **CSV export & metrics** — reply rate / bounce rate per distinct recipient,
+  and a full outreach CSV export, both gated behind their own tokens.
 
-## Architecture (single cloud app — no laptop dependency, no Ollama)
+## Architecture
 
 ```
-CLOUD (always-up free host)         Supabase Postgres        Gmail API (OAuth refresh token)
-  FastAPI + APScheduler                 source of truth          send + read (your account)
-  + React dashboard
-  + /health  (kept awake by free external cron-ping)
+Browser (React/Vite)  →  FastAPI (/api/v1/*)  →  Supabase Postgres
+                              │                    (pgbouncer pooled)
+                              └──→ Gmail API (OAuth refresh token; send + read)
+
+APScheduler drives sends/replies/follow-ups in-process. Free hosts suspend
+idle processes, so an external cron (e.g. cron-job.org) can hit
+POST /api/v1/tasks/run on a schedule to keep the pipeline correct even when
+the host was asleep — idempotent and safe to overlap with APScheduler.
 ```
 
 ## Tech stack
 
-| Layer      | Choice                                  |
-|------------|-----------------------------------------|
-| Backend    | Python · FastAPI · APScheduler          |
-| Database   | Supabase (Postgres)                     |
-| Email      | Gmail API (OAuth, stored refresh token) |
-| Frontend   | React + Tailwind (REST)                 |
-| Scheduling | `holidays` (India) + APScheduler        |
-| Hosting    | Free cloud host (Railway/Render — TBD)  |
+| Layer      | Choice                                                    |
+|------------|------------------------------------------------------------|
+| Backend    | Python 3.12 · FastAPI · APScheduler · SQLAlchemy (text SQL) |
+| Database   | Supabase (Postgres), pgbouncer transaction pooling          |
+| Email      | Gmail API (OAuth, stored refresh token)                     |
+| Frontend   | React + Vite + Tailwind CSS                                 |
+| Scheduling | `pytz` + `holidays` (country-configurable) + APScheduler    |
+| CI         | GitHub Actions — ruff + pytest (w/ coverage), eslint + build |
 
 ## Repo layout
 
 ```
 backend/
   app/
-    core/        config, db engine (pgbouncer-aware), security (API token)
+    core/        settings, DB engine (pgbouncer-aware), structured logging,
+                 auth (token + per-IP throttle)
     models/      pydantic request/response schemas
-    routers/     FastAPI route modules (health, tasks, outreach, replies,
-                 templates, suppression, stats, export)
-    services/    gmail, scheduler, scheduling, outreach, replies,
-                 followups, guards (deliverability/safety)
-    main.py      FastAPI app wiring + auth + CORS + lifespan
-  migrations/    SQL schema (001_init, 002_hardening)
-  scripts/       one-off ops: gmail_authorize, seed_templates
+    routers/     templates, outreach (contacts/sends/threads/search), replies,
+                 stats, suppression, settings, audit, privacy (GDPR erasure),
+                 export, tasks, health — all versioned under /api/v1
+    services/    outreach (render/schedule/dispatch), scheduling, replies
+                 (Gmail polling), followups, guards (safety rails), gmail
+                 (API wrapper), app_settings (config cache), audit
+    main.py      FastAPI app wiring: auth, CORS, security headers, /api/v1
+  migrations/    SQL schema, applied in order via scripts/migrate.py
+  scripts/       one-off ops: gmail_authorize, seed_templates, migrate
+  tests/         pytest suite (DB-free via a pinned settings cache)
   tools/
-    lead_finder/ standalone companion: find a company's hiring email
-                 (NOT imported by the running app)
+    lead_finder/ standalone companion script — not imported by the running app
 frontend/
   src/
-    pages/       one component per nav screen: Overview, AddContact,
-                 Templates, Suppression, and feature folders Outreach/ and
-                 Replies/ (each an index.jsx + its own panels)
-    components/  shared UI primitives (ui.jsx, Toast.jsx)
-    api.js       REST client (sends X-API-Token)
+    pages/       Overview, AddContact (compose), Board (pipeline kanban),
+                 Templates, Suppression, Settings, and feature folders
+                 Outreach/ and Replies/
+    components/  shared UI primitives (ui.jsx, Toast.jsx, icons.jsx)
+    api.js       REST client (X-API-Token, /api/v1 base)
     App.jsx      shell: sidebar nav + routing between pages
-docs/            plan & notes
+docs/
+  VISION.txt       mission, principles, roadmap
+  AI_BRIEF.txt     context for external AI tools to propose new features
+  artifact.html    UI/UX mockups, reviewed before anything gets built
+  exploration.html feature-lab feasibility studies
+.github/workflows/ CI: lint + test + build on every push
+Makefile           one-command workflow: install/migrate/seed/backend/
+                   frontend/test/lint/build/check
 ```
 
-## Scheduling & free-host reality
+## Development
 
-The in-process APScheduler drives work when the host is always-on. But **free hosts
-suspend idle processes**, and a suspended process runs no scheduler — so sends could
-miss their windows. To stay correct regardless, point an external cron (cron-job.org)
-at `POST /tasks/run` every few minutes: it runs exactly what the scheduler would
-(due sends, reply poll, follow-up sweep), token-guarded and idempotent. On an
-always-on host you can rely on APScheduler alone; on a free tier, drive it externally.
+```
+make install   # backend venv + frontend deps
+make migrate   # apply pending DB migrations
+make seed      # example templates
+make backend   # run the API (port 8000)
+make frontend  # run the dashboard (port 5173)
+make check     # everything CI runs: lint + test + build
+```
 
 ## Security
 
-All endpoints except `/health` require an `X-API-Token` header matching `API_TOKEN`
-(the frontend sends `VITE_API_TOKEN`). Auth is disabled only when `API_TOKEN` is unset
-(local dev). Set it before any public deploy — the app can send mail from your Gmail.
+Every route under `/api/v1` (except `/health`) requires an `X-API-Token` header
+matching `API_TOKEN`, compared in constant time with a per-IP failed-attempt
+throttle. Auth is disabled only when `API_TOKEN` is unset (local dev) — set it
+before any public deploy, since the app can send mail from your Gmail. Also
+in place: security headers, a request body size cap, interactive docs disabled
+in production, header-injection rejection on user input, and a fail-closed,
+header-only-token CSV export.
 
 ## Status
 
-See `docs/PLAN.md` for the phased build order. Foundation + outreach + replies +
-follow-ups + dashboard + hardening (caps, suppression, bounce handling, retries,
-auth) are implemented.
+Working product, actively developed. See `docs/VISION.txt` for the roadmap
+and principles behind design decisions, and `docs/PLAN.md` for build history.
