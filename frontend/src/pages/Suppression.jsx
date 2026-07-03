@@ -15,6 +15,8 @@ export default function Suppression({ refreshKey }) {
   const [rows, setRows] = useState([]);
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
+  const [eraseEmail, setEraseEmail] = useState("");
+  const [erasing, setErasing] = useState(false);
 
   async function load() {
     try {
@@ -50,6 +52,30 @@ export default function Suppression({ refreshKey }) {
     }
   }
 
+  async function eraseContact(e) {
+    e.preventDefault();
+    const addr = eraseEmail.trim();
+    if (!addr) return;
+    if (
+      !window.confirm(
+        `Permanently delete ${addr} and every thread, send, and reply on record for them? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    setErasing(true);
+    try {
+      await api.eraseContact(addr);
+      toast(`${addr} and all their data has been erased`, "success");
+      setEraseEmail("");
+      await load();
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      setErasing(false);
+    }
+  }
+
   return (
     <div className="space-y-5">
       <Card title="Add to suppression list">
@@ -77,6 +103,30 @@ export default function Suppression({ refreshKey }) {
         <p className="mt-3 text-xs text-brand-muted">
           Addresses here are never emailed. Bounced addresses and contacts you label
           “Negative” are added here automatically.
+        </p>
+      </Card>
+
+      <Card title="Erase a contact's data (GDPR)">
+        <form onSubmit={eraseContact} className="flex flex-wrap items-end gap-3">
+          <div className="w-64">
+            <Input
+              label="Email"
+              type="email"
+              required
+              placeholder="contact@company.com"
+              value={eraseEmail}
+              onChange={(e) => setEraseEmail(e.target.value)}
+            />
+          </div>
+          <Button type="submit" variant="danger" disabled={erasing}>
+            {erasing ? "Erasing…" : "Erase permanently"}
+          </Button>
+        </form>
+        <p className="mt-3 text-xs text-brand-muted">
+          Permanently deletes the contact and every thread, send, and reply on record
+          for them, and adds the address to suppression so they can't be re-imported
+          by accident. This cannot be undone — use "Suppress" above if you just want
+          to stop emailing someone without losing the history.
         </p>
       </Card>
 
