@@ -1,10 +1,13 @@
 // Thin REST client for the FastAPI backend.
 const BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+// Every app router lives under /api/v1 (see backend/app/main.py). /health does not
+// and is never called from here — it's an infra probe, not app data.
+const API_BASE = BASE + "/api/v1";
 
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
 async function req(path, options = {}) {
-  const res = await fetch(BASE + path, {
+  const res = await fetch(API_BASE + path, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -39,7 +42,7 @@ export const api = {
   // never in a URL (URLs end up in server logs and browser history).
   downloadExportCsv: async () => {
     const token = import.meta.env.VITE_EXPORT_TOKEN;
-    const res = await fetch(BASE + "/export/outreach.csv", {
+    const res = await fetch(API_BASE + "/export/outreach.csv", {
       headers: token ? { "X-Export-Token": token } : {},
     });
     if (!res.ok) {
