@@ -4,6 +4,32 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Content-Security-Policy: this is a static SPA with no server of its own, so a
+      <meta> tag is the only CSP delivery mechanism that works on any static host.
+      connect-src covers same-origin + localhost:8000 (the default VITE_API_BASE).
+      If you deploy the API on a DIFFERENT origin than the frontend, add that origin
+      to connect-src here — a mismatched CSP will silently block every API call.
+
+      NOTE: this blocks `npm run dev`'s Vite/HMR inline <style> injection (style-src
+      has no 'unsafe-inline') — the page will render unstyled under `vite dev`. The
+      PRODUCTION build (`vite build` -> external <link rel=stylesheet>) is unaffected
+      and was verified to render correctly under this exact policy. If you need
+      styled output while developing, temporarily loosen style-src locally; don't
+      loosen it in what you actually deploy.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+               script-src 'self';
+               style-src 'self' https://fonts.googleapis.com;
+               font-src 'self' https://fonts.gstatic.com;
+               img-src 'self' data:;
+               connect-src 'self' http://localhost:8000;
+               object-src 'none';
+               base-uri 'self';
+               frame-ancestors 'none'"
+    />
     <title>Email Automation</title>
   </head>
   <body>
