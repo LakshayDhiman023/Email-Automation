@@ -41,6 +41,28 @@ def _client_ip(request: Request | None) -> str:
     return request.client.host
 
 
+class SlidingWindowCounter:
+    """Per-key sliding-window event counter (in-process; fine for one instance).
+    Shared shape used by both the auth-failure throttle below and the general
+    per-IP request-rate limiter in main.py, so the two don't duplicate logic."""
+
+    def __init__(self, max_events: int, window_seconds: float):
+        self.max_events = max_events
+        self.window_seconds = window_seconds
+        self._events: dict[str, deque[float]] = defaultdict(deque)
+
+    def hit(self, key: str) -> bool:
+        """Record one event for `key`; return True if it's now over the limit."""
+        now = time.monotonic()
+        q = self._events[key]
+        q.append(now)
+        while q and now - q[0] > self.window_seconds:
+            q.popleft()
+        if not q:
+            self._events.pop(key, None)  # keep the map from growing unbounded
+        return len(q) > self.max_events
+
+
 def _too_many_failures(ip: str) -> bool:
     now = time.monotonic()
     q = _failures[ip]
