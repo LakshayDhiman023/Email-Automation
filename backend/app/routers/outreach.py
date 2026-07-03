@@ -71,14 +71,18 @@ def list_sends(status: str | None = None,
 
 @router.get("/threads", response_model=list[ThreadOut])
 def list_threads(status: str | None = None,
+                 search: str | None = Query(default=None, max_length=200),
                  limit: int = Query(default=500, ge=1, le=2000),
                  db: Session = Depends(get_db)):
     """Threads joined with recruiter + their latest send (for dashboard sections).
 
     One query via a LATERAL join for the latest send per thread — avoids the N+1
     round-trips that would hammer the pooled Postgres as the pipeline grows.
+    `search` matches the recruiter's name/company/email via the generated
+    tsvector column (see migration 006); `websearch_to_tsquery` accepts plain
+    typed-in phrases without the caller needing tsquery syntax.
     """
-    q = """
+    sql = """
         SELECT t.id, t.recruiter_id, r.name AS recruiter_name, r.company, r.email,
                t.template_id, t.status, t.gmail_thread_id, t.ooo_return_date,
                t.created_at,
@@ -93,12 +97,17 @@ def list_threads(status: str | None = None,
             ORDER BY s.id DESC LIMIT 1
         ) ls ON true
     """
-    params: dict = {"lim": limit}
+    conditions, params = [], {"lim": limit}
     if status:
-        q += " WHERE t.status=:status"
+        conditions.append("t.status=:status")
         params["status"] = status
-    q += " ORDER BY t.created_at DESC LIMIT :lim"
-    rows = db.execute(text(q), params).mappings().all()
+    if search and search.strip():
+        conditions.append("r.search_vector @@ websearch_to_tsquery('simple', :search)")
+        params["search"] = search.strip()
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    sql += " ORDER BY t.created_at DESC LIMIT :lim"
+    rows = db.execute(text(sql), params).mappings().all()
 
     out = []
     for row in rows:
