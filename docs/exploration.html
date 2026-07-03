@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mailflow — Feature Lab (Exploration)</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#ffffff; --panel2:#f7f9fc; --line:#e8ebee; --line2:#dfe3e8;
+    --ink:#1e1919; --muted:#637282; --blue:#0061fe; --blueDark:#0050d4; --blueSoft:#eef4ff;
+    --amber-bg:#fff8e6; --amber-fg:#9a6700; --green-bg:#e9f9f1; --green-fg:#0f7b45;
+    --red-bg:#fdecec; --red-fg:#b3261e; --sky-bg:#eaf6fd; --sky-fg:#0369a1;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       background:#f4f2ef;color:var(--ink);line-height:1.55}
+  .page{max-width:1080px;margin:0 auto;padding:36px 24px 90px}
+
+  .meta{background:var(--ink);color:#fff}
+  .meta-inner{max-width:1080px;margin:0 auto;padding:22px 24px;display:flex;
+              align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .meta h1{font-size:16px;font-weight:800}
+  .meta h1 span{color:#7fb0ff}
+  .meta p{font-size:12.5px;color:#c7c2ba;margin-top:2px}
+  .status{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+           background:#3a3530;color:#8fd3ff;border-radius:999px;padding:4px 12px}
+
+  .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue)}
+  h2{font-size:23px;font-weight:800;letter-spacing:-.01em;margin:5px 0 4px}
+  .lede{color:var(--muted);font-size:14px;max-width:700px;margin-bottom:20px}
+  .section{margin-top:46px}
+
+  /* scoreboard */
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line2);
+        border-radius:14px;overflow:hidden;font-size:13px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--panel2)}
+  tr:last-child td{border-bottom:none}
+  td b{font-weight:700}
+  .bar{display:inline-block;width:56px;height:6px;border-radius:999px;background:var(--line);
+       vertical-align:middle;margin-right:7px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:999px;background:var(--blue)}
+  .bar.effort i{background:#f6b93b}
+
+  .verdict{font-size:10.5px;font-weight:800;letter-spacing:.04em;border-radius:999px;padding:3px 10px;white-space:nowrap}
+  .v-build{background:var(--green-bg);color:var(--green-fg)}
+  .v-lite{background:var(--sky-bg);color:var(--sky-fg)}
+  .v-park{background:var(--amber-bg);color:var(--amber-fg)}
+  .v-reject{background:var(--red-bg);color:var(--red-fg)}
+
+  /* deep dives */
+  .study{background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:22px 24px;margin-top:16px}
+  .study-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .study h3{font-size:17px;font-weight:800}
+  .study .ask{font-size:13px;color:var(--muted);font-style:italic;margin-top:2px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
+  @media(max-width:760px){.cols{grid-template-columns:1fr}}
+  .cols h4{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .cols p, .cols li{font-size:13.5px;color:var(--ink)}
+  .cols ul{padding-left:18px}
+  .cols li{margin-bottom:5px}
+  .fact{background:var(--panel2);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;
+        padding:9px 12px;font-size:12.5px;margin-top:8px}
+  .fact.red{border-color:var(--red-fg);background:var(--red-bg)}
+  .fact.green{border-color:var(--green-fg);background:var(--green-bg)}
+  .fact code{font-family:ui-monospace,monospace;font-size:11.5px}
+  .decision{margin-top:14px;border-top:1px dashed var(--line2);padding-top:12px;font-size:13.5px}
+  .decision b{font-weight:800}
+
+  footer{text-align:center;color:#a39d93;font-size:12px;padding:26px 0 8px}
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <div class="meta-inner">
+    <div>
+      <h1>✉ Mail<span>flow</span> — Feature Lab</h1>
+      <p>Exploration &amp; feasibility studies. Verdicts, not wishes — nothing here is built until it graduates to the mockup artifact.</p>
+    </div>
+    <div class="status">Exploration · 2026-07-03</div>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="section" style="margin-top:30px">
+    <div class="eyebrow">Scoreboard</div>
+    <h2>Six ideas, scored honestly</h2>
+    <p class="lede">Value = how much it improves the core loop (find → email → reply → meet).
+       Effort = build + maintenance. Everything must be $0 and pass the six principles.</p>
+    <table>
+      <tr><th>Idea</th><th>Value</th><th>Effort</th><th>$0?</th><th>Verdict</th></tr>
+      <tr>
+        <td><b>Gmail embedded in the app</b> (iframe gmail.com)</td>
+        <td><span class="bar"><i style="width:80%"></i></span>4/5</td>
+        <td><span class="bar effort"><i style="width:100%"></i></span>∞</td>
+        <td>—</td>
+        <td><span class="verdict v-reject">REJECT — technically blocked</span></td>
+      </tr>
+      <tr>
+        <td><b>"Open in Gmail" deep links</b> (the salvage)</td>
+        <td><span class="bar"><i style="width:80%"></i></span>4/5</td>
+        <td><span class="bar effort"><i style="width:10%"></i></span>0.5/5</td>
+        <td>Yes</td>
+        <td><span class="verdict v-build">BUILD</span></td>
+      </tr>
+      <tr>
+        <td><b>Calendly-style booking</b> (rebuild it ourselves)</td>
+        <td><span class="bar"><i style="width:60%"></i></span>3/5</td>
+        <td><span class="bar effort"><i style="width:95%"></i></span>5/5</td>
+        <td>Yes, but…</td>
+        <td><span class="verdict v-reject">REJECT — integrate instead</span></td>
+      </tr>
+      <tr>
+        <td><b>Booking link as a first-class citizen</b> ({booking_link} + quick action)</td>
+        <td><span class="bar"><i style="width:80%"></i></span>4/5</td>
+        <td><span class="bar effort"><i style="width:20%"></i></span>1/5</td>
+        <td>Yes</td>
+        <td><span class="verdict v-build">BUILD</span></td>
+      </tr>
+      <tr>
+        <td><b>Email verification before sending</b> (DNS MX check)</td>
+        <td><span class="bar"><i style="width:80%"></i></span>4/5</td>
+        <td><span class="bar effort"><i style="width:35%"></i></span>2/5</td>
+        <td>Yes</td>
+        <td><span class="verdict v-build">BUILD</span></td>
+      </tr>
+      <tr>
+        <td><b>Template health check</b> (spam-word / link / length lint)</td>
+        <td><span class="bar"><i style="width:60%"></i></span>3/5</td>
+        <td><span class="bar effort"><i style="width:35%"></i></span>2/5</td>
+        <td>Yes</td>
+        <td><span class="verdict v-lite">BUILD-LITE</span></td>
+      </tr>
+      <tr>
+        <td><b>Contact timeline drawer</b> (Streak-style history)</td>
+        <td><span class="bar"><i style="width:60%"></i></span>3/5</td>
+        <td><span class="bar effort"><i style="width:60%"></i></span>3/5</td>
+        <td>Yes</td>
+        <td><span class="verdict v-park">PARK</span></td>
+      </tr>
+      <tr>
+        <td><b>Warm-up networks / open-tracking pixels</b></td>
+        <td>—</td><td>—</td><td>—</td>
+        <td><span class="verdict v-reject">REJECT — breaks P4/P5</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Study 01 · your question</div>
+    <div class="study">
+      <div class="study-head">
+        <div>
+          <h3>Gmail inside the app — "land on gmail.com within our website"</h3>
+          <div class="ask">"Can we add a view-gmail option, well within our website (if it's legal)?"</div>
+        </div>
+        <span class="verdict v-reject">REJECT iframe · BUILD deep links</span>
+      </div>
+      <div class="cols">
+        <div>
+          <h4>The hard fact (verified today)</h4>
+          <div class="fact red">Gmail's servers answer with <code>X-Frame-Options: SAMEORIGIN</code> —
+            the browser itself refuses to render gmail.com inside any other site's frame.
+            This isn't a legal grey zone we could risk; it's a technical wall. Every
+            workaround (proxying Google's pages, stripping headers) violates Google's ToS
+            and would trip their anti-abuse systems → account suspension risk, the one
+            thing P4 exists to prevent.</div>
+          <h4 style="margin-top:14px">What similar tools do</h4>
+          <p>Streak, Mixmax, Boomerang went the other direction — they inject INTO Gmail
+             as browser extensions. Superhuman/Missive rebuilt an entire mail client on
+             the API. Nobody embeds gmail.com, because nobody can.</p>
+        </div>
+        <div>
+          <h4>The salvage — 90% of the value at 2% of the cost</h4>
+          <p>We already store <code>gmail_thread_id</code> for every thread. Gmail supports
+             direct URLs to a thread:</p>
+          <div class="fact"><code>mail.google.com/mail/u/0/#all/&lt;thread_id&gt;</code></div>
+          <ul style="margin-top:8px">
+            <li>"Open in Gmail ↗" button on every thread card (Pipeline, Replies, Sent log)</li>
+            <li>Lands on the EXACT conversation, not the inbox</li>
+            <li>Zero new permissions, zero ToS exposure, ~20 lines of code</li>
+          </ul>
+          <p style="margin-top:8px">Pairs with parked Feature 04 (inline reply reading):
+             read in-app for speed, jump to Gmail for the full client when you need to reply manually.</p>
+        </div>
+      </div>
+      <div class="decision"><b>Verdict:</b> embedding is impossible by Google's own headers — killing this idea
+        is a calculation, not an opinion. Deep links deliver the actual need ("get me to this
+        conversation fast") for half a day of work. <b>Recommend: BUILD deep links.</b></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Study 02 · your question</div>
+    <div class="study">
+      <div class="study-head">
+        <div>
+          <h3>Calendly-style meeting booking</h3>
+          <div class="ask">"See if we can add a feature like Calendly to book meetings."</div>
+        </div>
+        <span class="verdict v-reject">REJECT rebuild · BUILD integration</span>
+      </div>
+      <div class="cols">
+        <div>
+          <h4>The math on rebuilding it</h4>
+          <ul>
+            <li>Needs a PUBLIC booking page → but Mailflow has no public-facing auth story
+                (login is deliberately deferred). New attack surface on day one.</li>
+            <li>Availability model, double-booking locks, timezone math for the INVITEE,
+                reschedule/cancel flows, calendar invites (.ics), reminder emails…
+                that's a second product, not a feature.</li>
+            <li>Google Calendar API is free, but this is ~3-4 weeks of work to reach
+                "worse than Calendly's free tier".</li>
+          </ul>
+          <h4 style="margin-top:12px">The decisive fact</h4>
+          <div class="fact green"><b>Cal.com is open-source and self-hostable</b> — the exact
+            ethos as Mailflow (your data, $0, own deployment). Calendly's free tier also
+            works. Rebuilding what the ecosystem already gives away free fails our own
+            "evaluate before build" test.</div>
+        </div>
+        <div>
+          <h4>What we build instead (the 1/5-effort version)</h4>
+          <ul>
+            <li><b>Settings → "Booking link"</b> field (your Cal.com / Calendly URL)</li>
+            <li><b><code>{booking_link}</code> becomes a built-in variable</b> like
+                {signature} — usable in any template or follow-up</li>
+            <li><b>"Send booking link" quick action</b> on positive replies: one click
+                drafts a courteous reply with your link, pre-filled into the existing
+                approval flow (P3 intact — you still approve it)</li>
+            <li>Onboarding checklist can later gain an optional "add a booking link" step</li>
+          </ul>
+          <p style="margin-top:8px">Result: the recruiter books a meeting in YOUR calendar
+             from OUR email — which is the outcome you actually wanted, without owning a
+             scheduling engine.</p>
+        </div>
+      </div>
+      <div class="decision"><b>Verdict:</b> booking the meeting matters; owning the booking engine doesn't.
+        <b>Recommend: BUILD the {booking_link} integration, point users at Cal.com/Calendly free.</b>
+        Revisit a native "suggest 3 free slots" (Google Calendar free/busy) only if the link flow
+        proves too weak in practice.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Study 03 · from similar tools</div>
+    <div class="study">
+      <div class="study-head">
+        <div>
+          <h3>Email verification before sending (MX check)</h3>
+          <div class="ask">What NeverBounce/ZeroBounce charge for, the free-tier slice of it.</div>
+        </div>
+        <span class="verdict v-build">BUILD</span>
+      </div>
+      <div class="cols">
+        <div>
+          <h4>Why it earns its place</h4>
+          <p>Every bounce hurts your Gmail reputation (P4), and today we only find out
+             AFTER sending. A DNS MX lookup — does this domain even receive mail? —
+             is free, takes ~50ms, and catches the most common real-world failure:
+             typos like <code>@gamil.com</code> or a dead startup's domain.</p>
+        </div>
+        <div>
+          <h4>Scope guard</h4>
+          <ul>
+            <li>At add-contact: MX lookup on the domain, non-blocking amber warning
+                ("this domain can't receive mail — check for a typo") with override</li>
+            <li>NOT SMTP-probing mailboxes (that's what gets IPs blacklisted) —
+                domain-level only</li>
+            <li>~40 lines backend + reuse the existing cooldown-style warning UI</li>
+          </ul>
+        </div>
+      </div>
+      <div class="decision"><b>Verdict:</b> highest bounce-prevention per line of code available to us. <b>BUILD.</b></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Study 04 · from similar tools</div>
+    <div class="study">
+      <div class="study-head">
+        <div>
+          <h3>Template health check (deliverability lint)</h3>
+          <div class="ask">Mail-tester's idea, as instant client-side hints in the template editor.</div>
+        </div>
+        <span class="verdict v-lite">BUILD-LITE</span>
+      </div>
+      <div class="cols">
+        <div>
+          <h4>What it checks (all local, no API)</h4>
+          <ul>
+            <li>Spam-trigger words ("free money", "act now", excessive "!!!")</li>
+            <li>Subject length (30-60 chars sweet spot), body length, link count</li>
+            <li>ALL-CAPS ratio, missing {signature}</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Honest limits</h4>
+          <p>Heuristics, not SpamAssassin — it nudges toward better copy, it can't promise
+             inbox placement. Ship as quiet hints under the editor (like the variable chips),
+             never a blocking gate.</p>
+        </div>
+      </div>
+      <div class="decision"><b>Verdict:</b> cheap, on-principle (P4), genuinely educational for the
+        learning-repo goal (P6). <b>BUILD-LITE</b> — worth one small pass, not more.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Study 05 · considered and parked / rejected</div>
+    <div class="study">
+      <div class="study-head">
+        <div><h3>The rest, quickly</h3></div>
+      </div>
+      <div class="cols">
+        <div>
+          <h4>Contact timeline drawer — PARK</h4>
+          <p>Streak-style per-contact history (every send, reply, label in one panel).
+             Real value once you're juggling 50+ threads, but the Pipeline board just
+             shipped and covers most of it. Re-evaluate when thread volume actually hurts.</p>
+        </div>
+        <div>
+          <h4>Warm-up networks &amp; open tracking — REJECT, permanently</h4>
+          <p>Instantly/Lemlist sell inbox "warm-up" (bot networks sending fake engagement)
+             and open-tracking pixels. Both violate P4 (Google actively bans warm-up
+             networks) and P5 (surveillance). These stay in the never column with
+             DM automation.</p>
+        </div>
+      </div>
+      <div class="decision"><b>Net result of this exploration:</b> 4 green-lit candidates —
+        <b>Open-in-Gmail deep links</b>, <b>{booking_link} integration</b>, <b>MX verification</b>,
+        <b>template health check</b>. Per our workflow, whichever you approve gets mocked in
+        <code>docs/artifact.html</code> first, then built.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>docs/exploration.html · feature lab — studies precede mockups precede code · 2026-07-03</footer>
+
+</body>
+</html>
