@@ -16,10 +16,21 @@ export default function Outreach({ refreshKey, onChange, stats }) {
       />
       {sub === "Approvals" && <Approvals refreshKey={refreshKey} onChange={onChange} />}
       {sub === "Scheduled" && (
-        <SendList title="Scheduled queue" status="approved" refreshKey={refreshKey} />
+        <SendList
+          title="Scheduled queue"
+          status="approved"
+          refreshKey={refreshKey}
+          emptyText="Nothing scheduled yet — approved emails will queue up here."
+        />
       )}
       {sub === "Sent" && (
-        <SendList title="Sent log" status="sent" refreshKey={refreshKey} timeField="sent_at" />
+        <SendList
+          title="Sent log"
+          status="sent"
+          refreshKey={refreshKey}
+          timeField="sent_at"
+          emptyText="Nothing sent yet — your sent emails will show up here."
+        />
       )}
     </div>
   );
