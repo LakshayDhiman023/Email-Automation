@@ -1,14 +1,25 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api";
-import { Badge, Card, Empty, fmt } from "../../components/ui";
+import { Badge, Card, Empty, Skeleton, fmt } from "../../components/ui";
 
 // Reused for Attention (replied_positive), Dead (replied_negative), OOO, etc.
 export default function ThreadList({ title, status, refreshKey }) {
-  const [threads, setThreads] = useState([]);
+  const [threads, setThreads] = useState(null);
 
   useEffect(() => {
-    api.listThreads(status).then(setThreads);
+    api.listThreads(status).then(setThreads).catch(() => setThreads([]));
   }, [status, refreshKey]);
+
+  if (threads === null) {
+    return (
+      <Card title={title}>
+        <div className="space-y-2" aria-busy="true" aria-label={`Loading ${title}`}>
+          <Skeleton className="h-11 w-full rounded-lg" />
+          <Skeleton className="h-11 w-3/4 rounded-lg" />
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card title={`${title} (${threads.length})`}>
