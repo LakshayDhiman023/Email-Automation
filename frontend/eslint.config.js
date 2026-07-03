@@ -17,5 +17,13 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // useToast/fmt intentionally live beside their components; the HMR edge case
+      // this guards against doesn't bite a single-user dashboard.
+      'react-refresh/only-export-components': 'off',
+      // False-positives on our async load() helpers — setState there happens after
+      // an await, not synchronously in the effect body.
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])
