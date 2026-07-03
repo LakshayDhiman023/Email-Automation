@@ -87,19 +87,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# /health stays open — the external cron-ping keeps the free host awake and must not
-# need a token. Everything else is guarded by the shared API token (if configured).
+# /health stays unversioned and open — infra probes (the external cron-ping that
+# keeps a free host awake, container healthchecks) shouldn't have to track an API
+# version, and it must not need a token. Everything else lives under /api/v1 so a
+# future breaking change has somewhere to go without disturbing this contract.
 app.include_router(health.router)
 
+API_V1 = "/api/v1"
 _guarded = [Depends(require_api_token)]
-app.include_router(templates.router, dependencies=_guarded)
-app.include_router(outreach.router, dependencies=_guarded)
-app.include_router(replies.router, dependencies=_guarded)
-app.include_router(stats.router, dependencies=_guarded)
-app.include_router(suppression.router, dependencies=_guarded)
-app.include_router(settings_router.router, dependencies=_guarded)
+app.include_router(templates.router, prefix=API_V1, dependencies=_guarded)
+app.include_router(outreach.router, prefix=API_V1, dependencies=_guarded)
+app.include_router(replies.router, prefix=API_V1, dependencies=_guarded)
+app.include_router(stats.router, prefix=API_V1, dependencies=_guarded)
+app.include_router(suppression.router, prefix=API_V1, dependencies=_guarded)
+app.include_router(settings_router.router, prefix=API_V1, dependencies=_guarded)
 # export has its OWN stronger, always-on token gate (see routers/export.py)
-app.include_router(export.router)
+app.include_router(export.router, prefix=API_V1)
 # tasks has its OWN header-token check (callable by external cron even if the
 # in-process scheduler was asleep) — see routers/tasks.py
-app.include_router(tasks.router)
+app.include_router(tasks.router, prefix=API_V1)
