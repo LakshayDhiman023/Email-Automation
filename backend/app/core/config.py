@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     # Sends are naturally spaced: at most _MAX_SENDS_PER_TICK (2) leave per 1-minute
     # tick, so a batch drips out ~30-60s apart without blocking the scheduler thread.
 
+    # General per-IP request ceiling (distinct from the auth-failure throttle in
+    # core/security.py) — bounds how hard even a VALID or stolen token can hammer
+    # the API. 0 disables it (e.g. trusted local dev).
+    rate_limit_per_minute: int = 300
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
