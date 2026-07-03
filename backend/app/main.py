@@ -1,5 +1,7 @@
 """FastAPI entrypoint: wires routers, auth, CORS, logging, and the scheduler lifespan."""
 import logging
+import time
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -8,8 +10,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
+from app.core.logging import client_ip_ctx, configure_logging, request_id_ctx
 from app.core.security import require_api_token
 from app.routers import (
+    audit,
     export,
     health,
     outreach,
@@ -24,11 +28,10 @@ from app.services import scheduler
 
 settings = get_settings()
 
-# make the services' log.info/warning/error actually surface under uvicorn
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-)
+# structured (JSON) logs: every line carries level/logger/message plus, for
+# request-scoped log calls, a request id and client ip (see request_context below) —
+# the shape an audit trail or log aggregator needs.
+configure_logging()
 log = logging.getLogger("app")
 
 
@@ -58,6 +61,32 @@ app = FastAPI(
 
 # Largest legitimate payload is a template body (~20 KB); anything near 1 MB is abuse.
 _MAX_BODY_BYTES = 1_000_000
+
+
+@app.middleware("http")
+async def request_context(request: Request, call_next):
+    """Stamp every request with an id + client ip (picked up by JsonFormatter so
+    every log line emitted while handling it is attributable), and log a single
+    structured access line per request — who did what, when, from where."""
+    rid = request.headers.get("x-request-id") or uuid.uuid4().hex[:12]
+    ip = request.client.host if request.client else "unknown"
+    rid_token = request_id_ctx.set(rid)
+    ip_token = client_ip_ctx.set(ip)
+    started = time.monotonic()
+    try:
+        response = await call_next(request)
+    finally:
+        request_id_ctx.reset(rid_token)
+        client_ip_ctx.reset(ip_token)
+    duration_ms = round((time.monotonic() - started) * 1000, 1)
+    logging.getLogger("access").info(
+        "%s %s -> %s", request.method, request.url.path, response.status_code,
+        extra={"method": request.method, "path": request.url.path,
+               "status": response.status_code, "duration_ms": duration_ms,
+               "request_id": rid, "client_ip": ip},
+    )
+    response.headers["X-Request-Id"] = rid
+    return response
 
 
 @app.middleware("http")
@@ -101,6 +130,7 @@ app.include_router(replies.router, prefix=API_V1, dependencies=_guarded)
 app.include_router(stats.router, prefix=API_V1, dependencies=_guarded)
 app.include_router(suppression.router, prefix=API_V1, dependencies=_guarded)
 app.include_router(settings_router.router, prefix=API_V1, dependencies=_guarded)
+app.include_router(audit.router, prefix=API_V1, dependencies=_guarded)
 # export has its OWN stronger, always-on token gate (see routers/export.py)
 app.include_router(export.router, prefix=API_V1)
 # tasks has its OWN header-token check (callable by external cron even if the
