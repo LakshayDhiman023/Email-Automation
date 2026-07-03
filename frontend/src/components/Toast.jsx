@@ -21,7 +21,12 @@ export function ToastProvider({ children }) {
   return (
     <ToastCtx.Provider value={push}>
       {children}
-      <div className="fixed bottom-5 right-5 z-50 space-y-2">
+      <div
+        className="fixed bottom-5 right-5 z-50 space-y-2"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {toasts.map((t) => (
           <div
             key={t.id}
