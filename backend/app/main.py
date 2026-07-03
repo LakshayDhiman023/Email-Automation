@@ -17,6 +17,7 @@ from app.routers import (
     export,
     health,
     outreach,
+    privacy,
     replies,
     settings as settings_router,
     stats,
@@ -131,6 +132,7 @@ app.include_router(stats.router, prefix=API_V1, dependencies=_guarded)
 app.include_router(suppression.router, prefix=API_V1, dependencies=_guarded)
 app.include_router(settings_router.router, prefix=API_V1, dependencies=_guarded)
 app.include_router(audit.router, prefix=API_V1, dependencies=_guarded)
+app.include_router(privacy.router, prefix=API_V1, dependencies=_guarded)
 # export has its OWN stronger, always-on token gate (see routers/export.py)
 app.include_router(export.router, prefix=API_V1)
 # tasks has its OWN header-token check (callable by external cron even if the
