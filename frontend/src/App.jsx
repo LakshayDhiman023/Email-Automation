@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
-import { ToastProvider } from "./components/Toast";
+import { ToastProvider, useToast } from "./components/Toast";
 import {
   IconBlock,
   IconColumns,
@@ -30,6 +30,19 @@ const NAV = [
   { id: "Suppression", label: "Suppression", Icon: IconBlock },
   { id: "Settings", label: "Settings", Icon: IconSettings },
 ];
+
+// Lives inside ToastProvider's subtree so it can toast errors (App itself can't).
+function ExportButton() {
+  const toast = useToast();
+  return (
+    <button
+      onClick={() => api.downloadExportCsv().catch((e) => toast(e.message, "error"))}
+      className="text-sm font-semibold px-4 py-2 rounded-lg border border-brand-line2 text-brand-ink hover:bg-brand-panel2 transition-colors"
+    >
+      Export CSV
+    </button>
+  );
+}
 
 function initials(name) {
   if (!name?.trim()) return "?";
@@ -144,12 +157,7 @@ export default function App() {
                 <p className="text-sm text-brand-muted mt-0.5">{SUBTITLES[tab]}</p>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => api.downloadExportCsv().catch((e) => alert(e.message))}
-                  className="text-sm font-semibold px-4 py-2 rounded-lg border border-brand-line2 text-brand-ink hover:bg-brand-panel2 transition-colors"
-                >
-                  Export CSV
-                </button>
+                <ExportButton />
                 <button
                   onClick={() => setTab("Add")}
                   className="bg-brand-blue text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand-blueDark transition-colors"
