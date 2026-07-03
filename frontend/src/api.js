@@ -85,7 +85,13 @@ export const api = {
   closeThread: (id) => req(`/threads/${id}/close`, { method: "POST" }),
 
   // threads / replies
-  listThreads: (status) => req("/threads" + (status ? `?status=${status}` : "")),
+  listThreads: (status, search) => {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (search) params.set("search", search);
+    const qs = params.toString();
+    return req("/threads" + (qs ? `?${qs}` : ""));
+  },
   listReplies: (threadId) =>
     req("/replies" + (threadId ? `?thread_id=${threadId}` : "")),
   labelThread: (threadId, payload) =>
