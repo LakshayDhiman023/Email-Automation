@@ -93,6 +93,12 @@ export default function App() {
 
   return (
     <ToastProvider>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:bg-brand-blue focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
+      >
+        Skip to main content
+      </a>
       <div className="min-h-screen flex">
         {/* ── Sidebar ── */}
         <aside className="hidden md:flex w-60 shrink-0 flex-col bg-brand-sidebar border-r border-brand-line">
@@ -101,7 +107,7 @@ export default function App() {
             <div className="text-xs text-brand-muted mt-1">Email Automation</div>
           </div>
 
-          <nav className="px-3 space-y-0.5">
+          <nav className="px-3 space-y-0.5" aria-label="Main">
             {NAV.map((n) => {
               const active = tab === n.id;
               const badge = n.badge ? stats[n.badge] : 0;
@@ -109,16 +115,20 @@ export default function App() {
                 <button
                   key={n.id}
                   onClick={() => setTab(n.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                  aria-current={active ? "page" : undefined}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue focus-visible:outline-offset-2 ${
                     active
                       ? "bg-brand-blueSoft text-brand-blue"
                       : "text-brand-muted hover:text-brand-ink hover:bg-brand-panel2"
                   }`}
                 >
-                  <n.Icon className="shrink-0" />
+                  <n.Icon className="shrink-0" aria-hidden="true" />
                   <span className="flex-1 text-left">{n.label}</span>
                   {badge > 0 && (
-                    <span className="text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center bg-brand-blue text-white">
+                    <span
+                      className="text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center bg-brand-blue text-white"
+                      aria-label={`${badge} need attention`}
+                    >
                       {badge}
                     </span>
                   )}
@@ -129,9 +139,13 @@ export default function App() {
 
           <button
             onClick={() => setTab("Settings")}
-            className="mt-auto flex items-center gap-3 px-6 py-4 border-t border-brand-line hover:bg-brand-panel2 transition-colors text-left"
+            aria-label={`Open Settings — signed in as ${me.sender_name || "unset name"}`}
+            className="mt-auto flex items-center gap-3 px-6 py-4 border-t border-brand-line hover:bg-brand-panel2 transition-colors text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue focus-visible:-outline-offset-2"
           >
-            <span className="shrink-0 w-9 h-9 rounded-full bg-brand-blueSoft text-brand-blue font-bold text-sm flex items-center justify-center">
+            <span
+              className="shrink-0 w-9 h-9 rounded-full bg-brand-blueSoft text-brand-blue font-bold text-sm flex items-center justify-center"
+              aria-hidden="true"
+            >
               {initials(me.sender_name)}
             </span>
             <span className="min-w-0">
@@ -167,22 +181,26 @@ export default function App() {
               </div>
             </div>
             {/* mobile nav */}
-            <div className="md:hidden px-3 pb-2 flex gap-1 overflow-x-auto">
+            <nav
+              className="md:hidden px-3 pb-2 flex gap-1 overflow-x-auto"
+              aria-label="Main (mobile)"
+            >
               {NAV.map((n) => (
                 <button
                   key={n.id}
                   onClick={() => setTab(n.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
+                  aria-current={tab === n.id ? "page" : undefined}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue ${
                     tab === n.id ? "bg-brand-blue text-white" : "text-brand-muted bg-brand-panel2"
                   }`}
                 >
                   {n.label}
                 </button>
               ))}
-            </div>
+            </nav>
           </header>
 
-          <main className="p-5 sm:p-8 flex-1">
+          <main id="main-content" tabIndex={-1} className="p-5 sm:p-8 flex-1">
             {tab === "Overview" && <Overview refreshKey={refreshKey} goTo={setTab} />}
             {tab === "Add" && (
               <AddContact templates={templates} onAdded={refresh} settings={me} />
