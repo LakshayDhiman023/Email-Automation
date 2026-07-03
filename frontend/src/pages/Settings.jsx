@@ -88,7 +88,7 @@ export default function Settings() {
       .getSettings()
       .then((row) => setS({ ...row, working_days: row.working_days || [1, 2, 3, 4, 5] }))
       .catch((e) => toast(e.message, "error"));
-  }, []);
+  }, [toast]);
 
   if (!s) return <Card title="Settings">Loading… (run migration 003 if this stays empty)</Card>;
 
