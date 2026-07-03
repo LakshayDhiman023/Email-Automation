@@ -34,6 +34,7 @@ export const api = {
   getSettings: () => req("/settings"),
   updateSettings: (s) => req("/settings", { method: "PUT", body: JSON.stringify(s) }),
   listTimezones: () => req("/settings/timezones"),
+  setupStatus: () => req("/settings/setup"),
   // Download the CSV via fetch + blob so the export token travels in a HEADER,
   // never in a URL (URLs end up in server logs and browser history).
   downloadExportCsv: async () => {
