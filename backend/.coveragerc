@@ -1,0 +1,14 @@
+[run]
+source = app
+# routers/scheduler/gmail need a live Postgres/Gmail account to exercise
+# meaningfully; excluded so the ratio reflects what's actually unit-tested today
+# (render/scheduling/guards/audit logic) instead of a misleading low number.
+omit =
+    app/routers/*
+    app/main.py
+    app/services/scheduler.py
+    app/services/gmail.py
+    app/services/replies.py
+
+[report]
+show_missing = True
