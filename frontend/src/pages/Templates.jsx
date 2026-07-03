@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { api } from "../api";
-import { Button, Card, Empty, Input } from "../components/ui";
+import { Button, Card, Empty, Input, Select } from "../components/ui";
 
 // {variable} names found in subject+body — the fields this template will ask for.
 function varsIn(...texts) {
@@ -10,6 +10,10 @@ function varsIn(...texts) {
       if (!seen.includes(m[1])) seen.push(m[1]);
   return seen;
 }
+
+// Known kinds so the field stays a closed set instead of free-text typos
+// (e.g. "Generic" vs "generic"); "example" marks the seeded starter templates.
+const KINDS = ["generic", "official_company", "startup", "example"];
 
 export default function Templates({ templates, onChange }) {
   const [editing, setEditing] = useState(null); // template id or "new"
@@ -38,6 +42,8 @@ export default function Templates({ templates, onChange }) {
   }
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const hasExampleTemplates = templates.some((t) => t.kind === "example");
+  const hasOwnTemplates = templates.some((t) => t.kind !== "example");
 
   return (
     <Card
@@ -48,6 +54,12 @@ export default function Templates({ templates, onChange }) {
         </Button>
       }
     >
+      {hasExampleTemplates && !hasOwnTemplates && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          The templates below are <b>starter examples</b> — edit them or create your own
+          before sending real outreach.
+        </div>
+      )}
       {templates.length === 0 && <Empty>No templates yet.</Empty>}
       <div className="space-y-2">
         {templates.map((t) => (
@@ -55,7 +67,13 @@ export default function Templates({ templates, onChange }) {
             <div className="flex items-center justify-between">
               <div>
                 <span className="font-medium text-brand-ink">{t.name}</span>
-                <span className="ml-2 text-xs text-brand-muted">{t.kind}</span>
+                {t.kind === "example" ? (
+                  <span className="ml-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+                    example
+                  </span>
+                ) : (
+                  <span className="ml-2 text-xs text-brand-muted">{t.kind}</span>
+                )}
               </div>
               <Button variant="ghost" onClick={() => startEdit(t)}>
                 Edit
@@ -68,7 +86,13 @@ export default function Templates({ templates, onChange }) {
       {editing !== null && (
         <div className="mt-4 rounded-xl border border-brand-line bg-brand-panel2 p-4 space-y-3">
           <Input label="Name" value={form.name} onChange={set("name")} />
-          <Input label="Kind" value={form.kind} onChange={set("kind")} />
+          <Select label="Kind" value={form.kind} onChange={set("kind")}>
+            {KINDS.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
+          </Select>
           <Input label="Subject" value={form.subject} onChange={set("subject")} />
           <label className="block">
             <span className="block text-sm font-medium text-brand-muted mb-1">
