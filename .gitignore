@@ -33,8 +33,6 @@ frontend/build/
 # Personal content — your real templates, signature, identity. Never pushed.
 personal/
 
-# Third-party tooling checkout (OpenHands) — not part of this app, never pushed.
-Repo/
 
 # Session context handoff notes — local only.
 CONTEXT.txt
