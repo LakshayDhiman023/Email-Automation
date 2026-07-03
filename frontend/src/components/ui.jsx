@@ -107,6 +107,29 @@ export function Empty({ children }) {
   return <p className="text-sm text-brand-muted py-10 text-center">{children}</p>;
 }
 
+// A pulsing placeholder block, for content that's still loading. Using a real
+// element (not a blank screen) keeps layout stable and signals "this is coming"
+// instead of looking broken.
+export function Skeleton({ className = "" }) {
+  return <div className={`animate-pulse rounded-lg bg-brand-line ${className}`} aria-hidden="true" />;
+}
+
+// A Card-shaped skeleton, for pages that show a grid of Cards while loading.
+export function SkeletonCard() {
+  return (
+    <div className="bg-brand-panel rounded-2xl border border-brand-line overflow-hidden">
+      <div className="px-6 py-5 border-b border-brand-line">
+        <Skeleton className="h-4 w-32" />
+      </div>
+      <div className="p-6 space-y-2.5">
+        <Skeleton className="h-11 w-full rounded-xl" />
+        <Skeleton className="h-11 w-full rounded-xl" />
+        <Skeleton className="h-11 w-3/4 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
 // Pill-style secondary toggle used inside grouped pages.
 export function SubTabs({ tabs, active, onChange, counts = {} }) {
   return (
