@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { api } from "../api";
 import { useToast } from "../components/Toast";
 import { Button, Card, Input, Select, fmt } from "../components/ui";
@@ -58,18 +58,18 @@ export default function AddContact({ templates, onAdded, settings }) {
   const ready =
     !!tmpl && !!email && fields.every((v) => optional.has(v) || (vals[v] || "").trim());
 
-  const preview = useMemo(() => {
-    if (!tmpl) return null;
-    // mirror add_contact(): name falls back to "there", signature comes from Settings
-    const name = (vals.name ?? vals.recruiter_name ?? "").trim() || "there";
-    return renderExact(tmpl.subject, tmpl.body, {
-      ...vals,
-      name,
-      recruiter_name: name,
-      company: vals.company || "",
-      signature: settings?.signature || "",
-    });
-  }, [tmpl, vals, settings]);
+  // mirror add_contact(): name falls back to "there", signature comes from Settings.
+  // Plain computation — it's cheap regex work, no memoization needed.
+  const previewName = (vals.name ?? vals.recruiter_name ?? "").trim() || "there";
+  const preview = tmpl
+    ? renderExact(tmpl.subject, tmpl.body, {
+        ...vals,
+        name: previewName,
+        recruiter_name: previewName,
+        company: vals.company || "",
+        signature: settings?.signature || "",
+      })
+    : null;
 
   async function confirmQueue(force = false) {
     setBusy(true);
