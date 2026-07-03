@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { useToast } from "../components/Toast";
-import { Button, Card, Empty, Input, fmt } from "../components/ui";
+import { Button, Card, Empty, Input, Skeleton, fmt } from "../components/ui";
 
 const REASON_STYLE = {
   manual: "text-brand-muted",
@@ -12,7 +12,7 @@ const REASON_STYLE = {
 
 export default function Suppression({ refreshKey }) {
   const toast = useToast();
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState(null);
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
   const [eraseEmail, setEraseEmail] = useState("");
@@ -130,10 +130,16 @@ export default function Suppression({ refreshKey }) {
         </p>
       </Card>
 
-      <Card title={`Suppressed addresses (${rows.length})`}>
-        {rows.length === 0 && <Empty>No suppressed addresses.</Empty>}
+      <Card title={rows === null ? "Suppressed addresses" : `Suppressed addresses (${rows.length})`}>
+        {rows === null && (
+          <div className="space-y-2" aria-busy="true" aria-label="Loading suppressed addresses">
+            <Skeleton className="h-14 w-full rounded-xl" />
+            <Skeleton className="h-14 w-3/4 rounded-xl" />
+          </div>
+        )}
+        {rows?.length === 0 && <Empty>No suppressed addresses.</Empty>}
         <div className="space-y-2">
-          {rows.map((r) => (
+          {(rows || []).map((r) => (
             <div
               key={r.email}
               className="flex items-center justify-between rounded-xl border border-brand-line bg-brand-panel2 px-4 py-3"
