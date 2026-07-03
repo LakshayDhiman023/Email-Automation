@@ -74,7 +74,10 @@ function Row({ label, value, accent, onClick }) {
         onClick ? "hover:bg-brand-blueSoft cursor-pointer" : "cursor-default"
       }`}
     >
-      <span className="text-sm text-brand-muted">{label}</span>
+      <span className="text-sm text-brand-muted flex items-center gap-1.5">
+        {label}
+        {onClick && <span className="text-brand-muted/50">›</span>}
+      </span>
       <span className={`text-lg font-bold ${accent || "text-brand-ink"}`}>{value}</span>
     </button>
   );
@@ -100,6 +103,8 @@ export default function Overview({ refreshKey, goTo }) {
   }
 
   const needsAttention = s.needs_review > 0 || s.pending_approval > 0;
+  const pipelineEmpty = !s.scheduled && !s.active && !s.sent;
+  const outcomesEmpty = !s.positive && !s.negative && !s.ooo;
 
   return (
     <div className="grid gap-5 md:grid-cols-2">
@@ -132,6 +137,11 @@ export default function Overview({ refreshKey, goTo }) {
           <Row label="Awaiting reply" value={s.active} accent="text-brand-blue" />
           <Row label="Sent total" value={s.sent} accent="text-emerald-600" onClick={() => goTo("Outreach")} />
           <Row label="Reply rate" value={`${s.reply_rate}%`} />
+          {pipelineEmpty && (
+            <p className="text-sm text-brand-muted pt-2 text-center">
+              Nothing queued yet — send your first email to get the pipeline moving.
+            </p>
+          )}
         </div>
       </Card>
 
@@ -141,6 +151,11 @@ export default function Overview({ refreshKey, goTo }) {
           <Row label="Negative" value={s.negative} accent="text-rose-600" onClick={() => goTo("Replies")} />
           <Row label="Out of office" value={s.ooo ?? 0} accent="text-amber-600" onClick={() => goTo("Replies")} />
         </div>
+        {outcomesEmpty && (
+          <p className="text-sm text-brand-muted pt-3 text-center">
+            No labeled replies yet — outcomes appear here once you label a reply.
+          </p>
+        )}
       </Card>
     </div>
   );
