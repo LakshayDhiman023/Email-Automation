@@ -1,26 +1,30 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api";
 import { useToast } from "../../components/Toast";
-import { Button, Card, Empty, Input, fmt } from "../../components/ui";
+import { Button, Card, Empty, Input, Skeleton, fmt } from "../../components/ui";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function NeedsReview({ refreshKey, onChange }) {
   const toast = useToast();
-  const [threads, setThreads] = useState([]);
+  const [threads, setThreads] = useState(null);
   const [replies, setReplies] = useState({}); // threadId -> latest reply snippet
   const [oooFor, setOooFor] = useState(null); // threadId whose OOO date-picker is open
   const [oooDate, setOooDate] = useState(today());
 
   async function load() {
-    const list = await api.listThreads("replied_unlabeled");
-    setThreads(list);
-    const map = {};
-    for (const t of list) {
-      const r = await api.listReplies(t.id);
-      map[t.id] = r[0];
+    try {
+      const list = await api.listThreads("replied_unlabeled");
+      setThreads(list);
+      const map = {};
+      for (const t of list) {
+        const r = await api.listReplies(t.id);
+        map[t.id] = r[0];
+      }
+      setReplies(map);
+    } catch {
+      setThreads([]);
     }
-    setReplies(map);
   }
   useEffect(() => {
     load();
@@ -36,6 +40,17 @@ export default function NeedsReview({ refreshKey, onChange }) {
     } catch (e) {
       toast(e.message, "error");
     }
+  }
+
+  if (threads === null) {
+    return (
+      <Card title="Needs review">
+        <div className="space-y-3" aria-busy="true" aria-label="Loading replies to review">
+          <Skeleton className="h-20 w-full rounded-xl" />
+          <Skeleton className="h-20 w-full rounded-xl" />
+        </div>
+      </Card>
+    );
   }
 
   return (
