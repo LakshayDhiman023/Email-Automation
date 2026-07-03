@@ -30,6 +30,30 @@ function label(v) {
   return v.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 }
 
+// Render text with any surviving {placeholder} visually marked as unresolved —
+// so "still a placeholder" is never mistaken for real content in the preview.
+function withPlaceholders(text) {
+  const out = [];
+  let last = 0;
+  let m;
+  const re = new RegExp(VAR_RE.source, "g");
+  while ((m = re.exec(text))) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(
+      <span
+        key={m.index}
+        className="rounded bg-amber-50 text-amber-700 px-1 border border-dashed border-amber-300"
+        title="Not filled in — this will send exactly as shown"
+      >
+        {m[0]}
+      </span>
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
 export default function AddContact({ templates, onAdded, settings }) {
   const toast = useToast();
   const [templateId, setTemplateId] = useState("");
@@ -170,10 +194,12 @@ export default function AddContact({ templates, onAdded, settings }) {
               <div className="text-xs text-brand-muted">To</div>
               <div className="text-sm text-brand-ink mb-3">{email || "—"}</div>
               <div className="text-xs text-brand-muted">Subject</div>
-              <div className="font-medium text-brand-ink mb-3">{preview.subject}</div>
+              <div className="font-medium text-brand-ink mb-3">
+                {withPlaceholders(preview.subject)}
+              </div>
               <div className="text-xs text-brand-muted">Body</div>
               <pre className="mt-1 whitespace-pre-wrap text-sm text-brand-ink font-sans">
-                {preview.body}
+                {withPlaceholders(preview.body)}
               </pre>
               {tmpl?.attach_resume && (
                 <div className="mt-3 text-xs text-brand-muted">
