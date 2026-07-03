@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import { Card } from "../components/ui";
+import { Card, SkeletonCard } from "../components/ui";
 
 // Onboarding steps in completion order; `tab` is where the unfinished step is done.
 const SETUP_STEPS = [
@@ -89,7 +89,15 @@ export default function Overview({ refreshKey, goTo }) {
     api.setupStatus().then(setSetup).catch(() => setSetup(null));
   }, [refreshKey]);
 
-  if (!s) return null;
+  if (!s) {
+    return (
+      <div className="grid gap-5 md:grid-cols-2" aria-busy="true" aria-label="Loading overview">
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    );
+  }
 
   const needsAttention = s.needs_review > 0 || s.pending_approval > 0;
 
