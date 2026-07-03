@@ -69,6 +69,12 @@ export const api = {
   removeSuppression: (email) =>
     req(`/suppression/${encodeURIComponent(email)}`, { method: "DELETE" }),
 
+  // GDPR-style erasure: permanently deletes the contact + all threads/sends/
+  // replies derived from them, and suppresses the address (distinct from
+  // suppression alone, which keeps history).
+  eraseContact: (email) =>
+    req(`/privacy/contacts/${encodeURIComponent(email)}`, { method: "DELETE" }),
+
   // templates
   listTemplates: () => req("/templates"),
   createTemplate: (t) => req("/templates", { method: "POST", body: JSON.stringify(t) }),
