@@ -1,14 +1,26 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api";
-import { Badge, Card, Empty, fmt } from "../../components/ui";
+import { Badge, Card, Empty, Skeleton, fmt } from "../../components/ui";
 
 // Reused for both the Scheduled Queue (status=approved) and Sent Log (status=sent).
 export default function SendList({ title, status, refreshKey, timeField = "scheduled_at" }) {
-  const [sends, setSends] = useState([]);
+  const [sends, setSends] = useState(null);
 
   useEffect(() => {
-    api.listSends(status).then(setSends);
+    api.listSends(status).then(setSends).catch(() => setSends([]));
   }, [status, refreshKey]);
+
+  if (sends === null) {
+    return (
+      <Card title={title}>
+        <div className="space-y-2" aria-busy="true" aria-label={`Loading ${title}`}>
+          <Skeleton className="h-11 w-full rounded-lg" />
+          <Skeleton className="h-11 w-full rounded-lg" />
+          <Skeleton className="h-11 w-3/4 rounded-lg" />
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card title={`${title} (${sends.length})`}>
