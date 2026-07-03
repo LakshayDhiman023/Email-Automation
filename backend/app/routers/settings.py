@@ -116,8 +116,12 @@ def setup_status(db: Session = Depends(get_db)) -> dict:
         text("SELECT sender_name FROM app_settings WHERE id=1")
     ).first()
     identity_set = bool(row and (row[0] or "").strip())
+    # excludes kind='example' — the seeded starter templates shouldn't let this
+    # step silently check itself off before the user has authored anything
     template_created = bool(
-        db.execute(text("SELECT 1 FROM templates WHERE is_active LIMIT 1")).first()
+        db.execute(
+            text("SELECT 1 FROM templates WHERE is_active AND kind != 'example' LIMIT 1")
+        ).first()
     )
     first_send_sent = bool(
         db.execute(text("SELECT 1 FROM sends WHERE status='sent' LIMIT 1")).first()
