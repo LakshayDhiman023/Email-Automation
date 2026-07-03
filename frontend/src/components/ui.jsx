@@ -17,7 +17,7 @@ export function Card({ title, action, children }) {
 
 export function Button({ variant = "primary", className = "", ...props }) {
   const base =
-    "px-5 py-2.5 rounded-full text-sm font-semibold transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed";
+    "px-5 py-2.5 rounded-full text-sm font-semibold transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue";
   const variants = {
     primary: "text-white bg-brand-blue hover:bg-brand-blueDark",
     ghost: "text-brand-ink bg-white border-2 border-brand-ink hover:bg-brand-panel2",
@@ -115,7 +115,8 @@ export function SubTabs({ tabs, active, onChange, counts = {} }) {
         <button
           key={t}
           onClick={() => onChange(t)}
-          className={`px-4 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5 ${
+          aria-current={active === t ? "true" : undefined}
+          className={`px-4 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue ${
             active === t
               ? "bg-brand-blue text-white"
               : "text-brand-muted hover:text-brand-ink hover:bg-brand-panel2"
