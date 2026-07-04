@@ -76,7 +76,7 @@ function Window({ title, start, end, onStart, onEnd }) {
   );
 }
 
-export default function Settings() {
+export default function Settings({ goTo }) {
   const toast = useToast();
   const [zones, setZones] = useState([]);
   const [s, setS] = useState(null);
@@ -119,6 +119,7 @@ export default function Settings() {
       });
       setS({ ...saved });
       toast("Settings saved ✓", "success");
+      goTo?.("Overview");
     } catch (e) {
       toast(e.message, "error");
     } finally {

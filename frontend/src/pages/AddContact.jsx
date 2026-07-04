@@ -30,7 +30,7 @@ function label(v) {
   return v.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 }
 
-export default function AddContact({ templates, onAdded, settings }) {
+export default function AddContact({ templates, onAdded, settings, goTo }) {
   const toast = useToast();
   const [templateId, setTemplateId] = useState("");
   const [email, setEmail] = useState("");
@@ -90,6 +90,7 @@ export default function AddContact({ templates, onAdded, settings }) {
       setEmail("");
       toast("Draft queued — approve it under Outreach", "success");
       onAdded?.();
+      goTo?.("Overview");
     } catch (e) {
       // the cooldown guard is overridable — surface a "send anyway" choice
       if (/force to override/i.test(e.message)) setCooldownBlock(e.message);
