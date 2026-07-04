@@ -55,3 +55,17 @@ def test_contact_variable_rejects_newline_and_oversize():
     with pytest.raises(ValidationError):
         ContactCreate(**base, variables={"role": "x" * 2001})
     ContactCreate(**base, variables={"role": "Engineer"})  # sane input passes
+
+
+def test_sliding_window_counter_trips_after_max_events():
+    counter = security.SlidingWindowCounter(max_events=3, window_seconds=60)
+    assert counter.hit("1.2.3.4") is False
+    assert counter.hit("1.2.3.4") is False
+    assert counter.hit("1.2.3.4") is False
+    assert counter.hit("1.2.3.4") is True  # 4th event within the window trips it
+
+
+def test_sliding_window_counter_keys_are_independent():
+    counter = security.SlidingWindowCounter(max_events=1, window_seconds=60)
+    assert counter.hit("ip-a") is False
+    assert counter.hit("ip-b") is False  # a different key isn't affected by ip-a's count

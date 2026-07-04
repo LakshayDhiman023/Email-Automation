@@ -14,8 +14,6 @@ import {
 } from "../../components/ui";
 
 // Reused for both the Scheduled Queue (status=approved) and Sent Log (status=sent).
-// Only the Scheduled queue (status="approved") is still unsent, so editing/deleting
-// only makes sense there — Sent is a historical log.
 export default function SendList({
   title,
   status,
@@ -106,7 +104,7 @@ export default function SendList({
 
   return (
     <Card title={`${title} (${sends.length})`}>
-      {sends.length === 0 && <Empty>Nothing here yet.</Empty>}
+      {sends.length === 0 && <Empty>{emptyText}</Empty>}
       <div className="space-y-2">
         {sends.map((s) =>
           editing === s.id ? (

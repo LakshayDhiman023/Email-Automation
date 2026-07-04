@@ -25,7 +25,13 @@ export default function Outreach({ refreshKey, onChange, stats }) {
         />
       )}
       {sub === "Sent" && (
-        <SendList title="Sent log" status="sent" refreshKey={refreshKey} timeField="sent_at" />
+        <SendList
+          title="Sent log"
+          status="sent"
+          refreshKey={refreshKey}
+          timeField="sent_at"
+          emptyText="Nothing sent yet — your sent emails will show up here."
+        />
       )}
     </div>
   );

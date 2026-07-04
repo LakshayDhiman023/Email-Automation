@@ -588,6 +588,177 @@ Talent · Keystone AI</div>
     </div>
   </div>
 
+  <div class="section">
+    <div class="eyebrow">Feature 06 · shipped 2026-07-03, plus full UX audit fixed</div>
+    <h2>Onboarding checklist — clearer framing, plus a real empty-state avatar</h2>
+    <p class="lede">Reported after running the live app: the checklist's generic heading and its
+       checkmark/circle/checkmark/circle order (Gmail ✓ → Identity ○ → Template ✓ → First send ○)
+       reads as broken rather than "2 things left." Separately, the sidebar avatar shows a bare
+       "?" when no name is set yet — technically correct (no name = no initials) but looks like a
+       missing icon rather than an intentional empty state.</p>
+
+    <div class="cols" style="margin-bottom:8px">
+      <div>
+        <h4>Before (current, live)</h4>
+        <div class="frame">
+          <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="path">mailflow.local — Overview</span></div>
+          <div style="padding:18px 20px">
+            <div style="border:1px solid #bcd4ff;border-radius:14px;padding:16px 18px;background:linear-gradient(180deg,#f5f9ff,#fff)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+                <b style="font-size:12.5px">Finish setting up Mailflow</b>
+                <span style="font-size:11px;font-weight:700;color:var(--blue)">2 of 4 done</span>
+              </div>
+              <div style="height:5px;border-radius:99px;background:var(--line);margin-bottom:12px;overflow:hidden">
+                <div style="width:50%;height:100%;background:var(--blue)"></div>
+              </div>
+              <div style="font-size:12.5px;display:grid;gap:6px">
+                <div style="color:var(--muted);text-decoration:line-through">✓ Connect Gmail</div>
+                <div style="font-weight:600">○ Set your name &amp; signature</div>
+                <div style="color:var(--muted);text-decoration:line-through">✓ Create your first template</div>
+                <div style="font-weight:600">○ Queue &amp; approve your first email</div>
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--line)">
+              <span style="width:32px;height:32px;border-radius:99px;background:var(--panel2);border:1.5px dashed var(--line2);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted)">?</span>
+              <span style="font-size:12.5px;font-weight:700">Set your name</span>
+            </div>
+          </div>
+        </div>
+        <div class="fact red" style="margin-top:10px">Reads as "2 things are broken," not "2 things left." The bare "?" looks like a missing asset.</div>
+      </div>
+
+      <div>
+        <h4>After (proposed)</h4>
+        <div class="frame">
+          <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="path">mailflow.local — Overview</span></div>
+          <div style="padding:18px 20px">
+            <div style="border:1px solid #bcd4ff;border-radius:14px;padding:16px 18px;background:linear-gradient(180deg,#f5f9ff,#fff)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+                <b style="font-size:12.5px">Complete your profile</b>
+                <span style="font-size:11px;font-weight:700;color:var(--blue)">2 steps left</span>
+              </div>
+              <div style="height:5px;border-radius:99px;background:var(--line);margin-bottom:12px;overflow:hidden">
+                <div style="width:50%;height:100%;background:var(--blue)"></div>
+              </div>
+              <div style="font-size:12.5px;display:grid;gap:7px">
+                <div style="font-weight:600;display:flex;justify-content:space-between"><span>Set your name &amp; signature</span><span style="color:var(--blue);font-weight:700">Go to Settings →</span></div>
+                <div style="font-weight:600;display:flex;justify-content:space-between"><span>Queue &amp; approve your first email</span><span style="color:var(--blue);font-weight:700">New email →</span></div>
+              </div>
+              <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:11px;color:var(--muted)">
+                ✓ Gmail connected &nbsp;·&nbsp; ✓ First template created
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--line)">
+              <span style="width:32px;height:32px;border-radius:99px;background:var(--blueSoft);color:var(--blue);display:flex;align-items:center;justify-content:center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+              </span>
+              <span style="font-size:12.5px;font-weight:700">Set your name</span>
+            </div>
+          </div>
+        </div>
+        <div class="fact green" style="margin-top:10px">Only PENDING steps are listed (done ones collapse to a small confirmation line below) — the eye reads "what's left," not a mixed list. The avatar becomes a person-outline glyph, matching the Settings gear's visual language instead of a bare punctuation mark.</div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><b>Heading</b><span>"Finish setting up Mailflow" → "Complete your profile" — half the remaining steps are about YOU (name, first send), so the card should read personally, not like a generic app-setup gate.</span></div>
+      <div class="callout"><b>Ordering</b><span>Done items no longer interleave with pending ones — they collapse into one quiet confirmation line, so the checklist body is 100% "what's left."</span></div>
+      <div class="callout"><b>Avatar empty state</b><span>New <code>IconUser</code> (person-in-circle, same 1.75px stroke language as the sidebar icon set) replaces the bare "?" — reads as "no photo yet," not "broken."</span></div>
+    </div>
+    <div class="warn" style="margin-top:10px">Status: only the underlying LOGIC bug shipped (checklist no longer
+      self-checks off "first template" from seed data alone — see the audit below). The heading reword and the
+      person-icon avatar shown above are STILL JUST A MOCKUP — not yet built. Revisit if wanted.</div>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Formal UX audit · 2026-07-03 · Laws of UX framework</div>
+    <h2>Full audit against Laws of UX + Nielsen's heuristics — all findings fixed</h2>
+    <p class="lede">Ran a full 7-section audit (executive summary, journey walkthroughs, violation table,
+       critical issues, quick wins, strategic improvements, maturity scorecard) against every screen in
+       the live app, using two independent capture passes for cross-validation. Overall maturity scored
+       7/10 ("Good") — no Critical findings, two High-severity items. All of the following are now fixed
+       and verified live (including seeding and deleting one temporary test reply to confirm the
+       triage screen, which had never been visually checked with real data before).</p>
+    <table>
+      <tr><th>Finding</th><th>Severity</th><th>Fix</th></tr>
+      <tr><td>Unresolved <code>{role}</code>-style tokens render as plain text in the live preview — indistinguishable from real content</td><td>High</td><td>Now rendered with a dashed amber border + highlight in both subject and body (<code>withPlaceholders()</code> in AddContact.jsx)</td></tr>
+      <tr><td>Reply-triage screen (Positive/Negative/OOO) never verified with real data</td><td>High (coverage gap)</td><td>Seeded one test reply, confirmed the three actions are well color-differentiated and the OOO date-picker discloses correctly, then deleted the test data</td></tr>
+      <tr><td>Example templates are indistinguishable from real ones — risk of sending an unedited sample</td><td>Medium-High</td><td>Amber "starter examples" banner + amber badge on each example row</td></tr>
+      <tr><td>Onboarding checklist's "first template" step satisfied by seed data alone</td><td>Medium</td><td><code>template_created</code> now excludes <code>kind='example'</code> rows</td></tr>
+      <tr><td>Empty-state copy voice inconsistent ("None." vs full sentences)</td><td>Medium</td><td>Every list now takes a specific <code>emptyText</code> prop with warm, specific copy per screen</td></tr>
+      <tr><td>Clickable Overview stat rows have no persistent affordance</td><td>Medium</td><td>Added a static "›" chevron next to every clickable row's label</td></tr>
+      <tr><td>Pipeline/Outcomes cards show naked zeros with no framing</td><td>Medium</td><td>Added context sentences matching the "All caught up" pattern already used in Needs your action</td></tr>
+      <tr><td>Template "Kind" field is free-text with no validation</td><td>Low-Medium</td><td>Converted to a Select constrained to the four known kinds</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="eyebrow">Feature 07 · bug report from real use, awaiting sign-off</div>
+    <h2>Timezone picker — dropdown instead of an always-open list box</h2>
+    <p class="lede">Reported after running the live app: the current timezone control is an always-visible
+       multi-line list box sitting under a search input — it eats vertical space permanently and doesn't
+       read as "a setting you can change," it reads as a mini file browser. Requested behavior: a closed
+       control showing the current timezone, click to open a searchable dropdown, click a result to select
+       and close, back to showing just the selection. This is a live, working mock below — type to filter,
+       click a result.</p>
+
+    <div class="cols" style="margin-bottom:8px">
+      <div>
+        <h4>Before (current, live)</h4>
+        <div class="frame">
+          <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="path">mailflow.local — Settings</span></div>
+          <div style="padding:20px">
+            <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">Timezone</div>
+            <div style="border:1px solid var(--line2);border-radius:9px;padding:9px 12px;font-size:13.5px;color:#b7b1a7;margin-bottom:8px">Search e.g. New York, London, Kolkata…</div>
+            <div style="border:1px solid var(--line2);border-radius:9px;overflow:hidden">
+              <div style="background:#dfe3e8;padding:7px 12px;font-size:13px">Asia/Kolkata</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)">Asia/Kathmandu</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)">Asia/Karachi</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)">Asia/Dhaka</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)">Asia/Colombo</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);opacity:.4">⋮ (fixed 8-row box, always open)</div>
+            </div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Current selection: <b>Asia/Kolkata</b></div>
+          </div>
+        </div>
+        <div class="fact red" style="margin-top:10px">Always occupies ~230px of vertical space on the Settings page whether
+          you're changing it or not — reads as a permanent embedded list, not a dropdown control.</div>
+      </div>
+
+      <div>
+        <h4>After (proposed — try it, this is live)</h4>
+        <div class="frame">
+          <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="path">mailflow.local — Settings</span></div>
+          <div style="padding:20px;min-height:280px">
+            <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">Timezone</div>
+            <div id="tzWrap" style="position:relative;max-width:340px">
+              <button id="tzTrigger" style="width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--line2);border-radius:9px;padding:10px 13px;font-size:13.5px;background:#fff;cursor:pointer">
+                <span id="tzTriggerLabel">Asia/Kolkata</span>
+                <span style="color:var(--muted);font-size:11px">▾</span>
+              </button>
+              <div id="tzDropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--line2);border-radius:10px;box-shadow:0 12px 32px -12px rgba(0,0,0,.25);z-index:10;overflow:hidden">
+                <div style="padding:8px">
+                  <input id="tzSearch" placeholder="Search e.g. New York, London, Kolkata…" style="width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 11px;font-size:13px;outline:none" />
+                </div>
+                <div id="tzList" style="max-height:220px;overflow-y:auto;border-top:1px solid var(--line)"></div>
+              </div>
+            </div>
+            <p style="font-size:11.5px;color:var(--muted);margin-top:8px">Click the field above to open the picker.</p>
+          </div>
+        </div>
+        <div class="fact green" style="margin-top:10px">Closed by default — shows only the current selection plus its UTC
+          offset. Click opens a search-filterable dropdown that overlays the page instead of pushing content down; picking
+          a result closes it immediately, same interaction as Google Calendar / Calendly's timezone control.</div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><b>Full IANA coverage kept</b><span>Same ~440-zone <code>pytz.common_timezones</code> list already served by the backend — this is purely an interaction change, not a data change.</span></div>
+      <div class="callout"><b>City, live time, offset — Google Calendar's row shape</b><span>Each row shows the zone's current local time plus its GMT offset, right-aligned in muted tabular numerals, same layout Google Calendar and Calendly use — genuinely computed live, not a hardcoded label that goes stale across DST changes.</span></div>
+      <div class="callout"><b>Closes on: pick, outside click, Escape</b><span>Standard dropdown dismissal — no dedicated close button needed.</span></div>
+    </div>
+  </div>
+
 </div>
 
 <footer>docs/artifact.html · UI/UX mockups, reviewed before implementation · updated 2026-07-03</footer>
@@ -602,6 +773,111 @@ Talent · Keystone AI</div>
     });
   });
   document.querySelector('.theme-btn[data-set="light"]')?.classList.add("active");
+
+  // ---- Feature 07 mock: real, working timezone dropdown ----
+  (function () {
+    const trigger = document.getElementById("tzTrigger");
+    if (!trigger) return; // section not present (shouldn't happen, guards anyway)
+    const wrap = document.getElementById("tzWrap");
+    const dropdown = document.getElementById("tzDropdown");
+    const search = document.getElementById("tzSearch");
+    const list = document.getElementById("tzList");
+    const triggerLabel = document.getElementById("tzTriggerLabel");
+
+    // Representative slice of real pytz.common_timezones IANA identifiers — the
+    // real build serves the full ~440-zone list; these are enough to prove the
+    // interaction. Offset + current time are COMPUTED live below, Google-Calendar-
+    // style, never a hardcoded label that could go stale (e.g. across DST changes).
+    const ZONE_NAMES = [
+      "Asia/Kolkata", "Asia/Kathmandu", "Asia/Dhaka", "Asia/Karachi", "Asia/Dubai",
+      "Asia/Singapore", "Asia/Tokyo", "Asia/Shanghai", "Asia/Seoul", "Asia/Jakarta",
+      "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Madrid", "Europe/Moscow",
+      "Europe/Istanbul", "America/New_York", "America/Chicago", "America/Denver",
+      "America/Los_Angeles", "America/Sao_Paulo", "America/Mexico_City", "America/Toronto",
+      "Africa/Cairo", "Africa/Johannesburg", "Africa/Lagos", "Australia/Sydney",
+      "Australia/Perth", "Pacific/Auckland", "UTC",
+    ];
+
+    function zoneInfo(name) {
+      const now = new Date();
+      const time = new Intl.DateTimeFormat("en-US", {
+        timeZone: name, hour: "numeric", minute: "2-digit", hour12: true,
+      }).format(now);
+      // derive the UTC offset by diffing a formatted local wall-clock against UTC
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: name, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit",
+      }).formatToParts(now).reduce((a, p) => ((a[p.type] = p.value), a), {});
+      const asUTC = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute);
+      const offsetMin = Math.round((asUTC - Date.UTC(
+        now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+        now.getUTCHours(), now.getUTCMinutes()
+      )) / 60000);
+      const sign = offsetMin >= 0 ? "+" : "-";
+      const abs = Math.abs(offsetMin);
+      const off = `GMT${sign}${Math.floor(abs / 60)}${abs % 60 ? ":" + String(abs % 60).padStart(2, "0") : ""}`;
+      return { time, off };
+    }
+
+    let current = "Asia/Kolkata";
+
+    function labelFor(name) {
+      const { time, off } = zoneInfo(name);
+      return `${name.replace(/_/g, " ")} <span style="color:var(--muted);font-weight:400">— ${time} (${off})</span>`;
+    }
+
+    function renderList(filter) {
+      const q = (filter || "").trim().toLowerCase();
+      // match against both "america/new_york" and "america/new york" so a search
+      // with a plain space (how people actually type a city name) still finds it
+      const filtered = q
+        ? ZONE_NAMES.filter((z) => z.toLowerCase().includes(q) || z.toLowerCase().replace(/_/g, " ").includes(q))
+        : ZONE_NAMES;
+      list.innerHTML = filtered.length
+        ? filtered.map((name) => {
+            const { time, off } = zoneInfo(name);
+            const selected = name === current;
+            return `
+            <button data-zone="${name}"
+              style="width:100%;text-align:left;display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+                     padding:9px 14px;font-size:13.5px;border:none;background:${selected ? "var(--blueSoft)" : "#fff"};
+                     color:${selected ? "var(--blue)" : "var(--ink)"};cursor:pointer;font-weight:${selected ? "700" : "400"}">
+              <span>${name.replace(/_/g, " ")}</span>
+              <span style="color:${selected ? "var(--blue)" : "var(--muted)"};font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:12.5px">${time} · ${off}</span>
+            </button>`;
+          }).join("")
+        : `<div style="padding:14px;font-size:12.5px;color:var(--muted);text-align:center">No matching timezone</div>`;
+    }
+
+    function open() {
+      dropdown.style.display = "block";
+      search.value = "";
+      renderList("");
+      setTimeout(() => search.focus(), 0);
+    }
+    triggerLabel.innerHTML = labelFor(current); // set the initial closed-state label live, on load
+    function close() {
+      dropdown.style.display = "none";
+    }
+
+    trigger.addEventListener("click", () => {
+      dropdown.style.display === "block" ? close() : open();
+    });
+    search.addEventListener("input", (e) => renderList(e.target.value));
+    list.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-zone]");
+      if (!btn) return;
+      current = btn.dataset.zone;
+      triggerLabel.innerHTML = labelFor(current);
+      close();
+    });
+    document.addEventListener("click", (e) => {
+      if (!wrap.contains(e.target)) close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
+    });
+  })();
 </script>
 
 </body>

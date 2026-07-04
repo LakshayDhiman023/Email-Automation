@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
 from app.core.logging import client_ip_ctx, configure_logging, request_id_ctx
-from app.core.security import require_api_token
+from app.core.security import SlidingWindowCounter, require_api_token
 from app.routers import (
     audit,
     export,
@@ -63,6 +63,23 @@ app = FastAPI(
 # Largest legitimate payload is a template body (~20 KB); anything near 1 MB is abuse.
 _MAX_BODY_BYTES = 1_000_000
 
+# General per-IP request ceiling — distinct from core.security's auth-failure
+# throttle, which only counts BAD tokens. This bounds total request volume from
+# one IP regardless of whether its token is valid, so a leaked/stolen token (or
+# a bug in a client) can't hammer the API at unlimited rate. 0 disables it.
+_rate_limiter = SlidingWindowCounter(max_events=settings.rate_limit_per_minute, window_seconds=60)
+
+
+@app.middleware("http")
+async def rate_limit(request: Request, call_next):
+    if settings.rate_limit_per_minute > 0:
+        ip = request.client.host if request.client else "unknown"
+        if _rate_limiter.hit(ip):
+            return JSONResponse(
+                {"detail": "too many requests; slow down"}, status_code=429
+            )
+    return await call_next(request)
+
 
 @app.middleware("http")
 async def request_context(request: Request, call_next):
@@ -102,6 +119,17 @@ async def security_headers(request: Request, call_next):
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "no-referrer")
     response.headers.setdefault("Cache-Control", "no-store")  # API data is private
+    # defense-in-depth for any HTML this API itself serves. Skipped when /docs is
+    # enabled (local dev only, per _docs_on below) since Swagger UI loads its own
+    # JS/CSS from a CDN and a strict CSP would break it; production never has
+    # /docs on, so this is the meaningful case. The frontend's OWN CSP (its
+    # index.html <meta> tag) is what actually protects the SPA — this API
+    # returns JSON, not the app's markup.
+    if not _docs_on:
+        response.headers.setdefault(
+            "Content-Security-Policy",
+            "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+        )
     if request.url.scheme == "https":
         response.headers.setdefault(
             "Strict-Transport-Security", "max-age=63072000; includeSubDomains"

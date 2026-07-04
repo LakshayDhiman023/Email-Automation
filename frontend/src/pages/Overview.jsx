@@ -37,9 +37,9 @@ function SetupChecklist({ setup, goTo }) {
   const done = SETUP_STEPS.filter((s) => setup[s.key]).length;
   return (
     <div className="md:col-span-2 rounded-2xl border border-blue-200 bg-gradient-to-b from-brand-blueSoft to-brand-panel p-5">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between gap-2 mb-3">
         <span className="text-sm font-extrabold text-brand-ink">Finish setting up Mailflow</span>
-        <span className="text-xs font-bold text-brand-blue">
+        <span className="text-xs font-bold text-brand-blue shrink-0">
           {done} of {SETUP_STEPS.length} done
         </span>
       </div>
@@ -53,17 +53,17 @@ function SetupChecklist({ setup, goTo }) {
         {SETUP_STEPS.map((s) => {
           const ok = setup[s.key];
           return (
-            <div key={s.key} className="flex items-center gap-2.5 text-sm">
+            <div key={s.key} className="flex items-center flex-wrap gap-x-2.5 gap-y-1 text-sm">
               {ok ? (
-                <span className="w-[18px] h-[18px] rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-extrabold inline-flex items-center justify-center">
+                <span className="w-[18px] h-[18px] rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-extrabold inline-flex items-center justify-center shrink-0">
                   ✓
                 </span>
               ) : (
-                <span className="w-[18px] h-[18px] rounded-full border-[1.5px] border-brand-line2 inline-flex" />
+                <span className="w-[18px] h-[18px] rounded-full border-[1.5px] border-brand-line2 inline-flex shrink-0" />
               )}
               <span
                 className={
-                  ok ? "text-brand-muted line-through" : "font-semibold text-brand-ink flex-1"
+                  ok ? "text-brand-muted line-through" : "font-semibold text-brand-ink flex-1 min-w-[140px]"
                 }
               >
                 {s.label}
@@ -72,12 +72,12 @@ function SetupChecklist({ setup, goTo }) {
                 (s.tab ? (
                   <button
                     onClick={() => goTo(s.tab)}
-                    className="text-xs font-bold text-brand-blue hover:text-brand-blueDark"
+                    className="text-xs font-bold text-brand-blue hover:text-brand-blueDark whitespace-nowrap pl-[26px] sm:pl-0"
                   >
                     {s.cta}
                   </button>
                 ) : (
-                  <span className="text-xs text-brand-muted">{s.hint}</span>
+                  <span className="text-xs text-brand-muted whitespace-nowrap pl-[26px] sm:pl-0">{s.hint}</span>
                 ))}
             </div>
           );
@@ -95,7 +95,10 @@ function Row({ label, value, accent, onClick }) {
         onClick ? "hover:bg-brand-blueSoft cursor-pointer" : "cursor-default"
       }`}
     >
-      <span className="text-sm text-brand-muted">{label}</span>
+      <span className="text-sm text-brand-muted flex items-center gap-1.5">
+        {label}
+        {onClick && <span className="text-brand-muted/50">›</span>}
+      </span>
       <span className={`text-lg font-bold ${accent || "text-brand-ink"}`}>{value}</span>
     </button>
   );
@@ -163,15 +166,25 @@ export default function Overview({ refreshKey, goTo }) {
           <Row label="Awaiting reply" value={s.active} accent="text-brand-blue" />
           <Row label="Sent total" value={s.sent} accent="text-emerald-600" onClick={() => goTo("Outreach")} />
           <Row label="Reply rate" value={`${s.reply_rate}%`} />
+          {pipelineEmpty && (
+            <p className="text-sm text-brand-muted pt-2 text-center">
+              Nothing queued yet — send your first email to get the pipeline moving.
+            </p>
+          )}
         </div>
       </Card>
 
       <Card title="Outcomes">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           <Row label="Positive" value={s.positive} accent="text-emerald-600" onClick={() => goTo("Replies")} />
           <Row label="Negative" value={s.negative} accent="text-rose-600" onClick={() => goTo("Replies")} />
           <Row label="Out of office" value={s.ooo ?? 0} accent="text-amber-600" onClick={() => goTo("Replies")} />
         </div>
+        {outcomesEmpty && (
+          <p className="text-sm text-brand-muted pt-3 text-center">
+            No labeled replies yet — outcomes appear here once you label a reply.
+          </p>
+        )}
       </Card>
     </div>
   );

@@ -24,10 +24,16 @@ export default function Replies({ refreshKey, onChange, stats }) {
           title="Attention — positive replies"
           status="replied_positive"
           refreshKey={refreshKey}
+          emptyText="No positive replies yet."
         />
       )}
       {sub === "Dead" && (
-        <ThreadList title="Dead threads" status="replied_negative" refreshKey={refreshKey} />
+        <ThreadList
+          title="Dead threads"
+          status="replied_negative"
+          refreshKey={refreshKey}
+          emptyText="No dead threads yet."
+        />
       )}
     </div>
   );

@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      No CSP meta tag here on purpose: `vite build` injects one automatically (see
+      vite.config.js's csp-meta-tag plugin) so `npm run dev` stays unaffected — Vite's
+      HMR relies on inline <style>/<script> that a strict CSP would block. The
+      production build uses external <link rel=stylesheet>/<script src> only, so the
+      injected policy is safe there. Never hand-add a CSP tag to this file; edit the
+      policy string in vite.config.js instead so dev keeps working.
+    -->
     <title>Email Automation</title>
   </head>
   <body>
