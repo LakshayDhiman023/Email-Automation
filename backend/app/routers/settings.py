@@ -100,9 +100,18 @@ def update_settings(payload: SettingsIn, db: Session = Depends(get_db)):
 
 
 @router.get("/timezones")
-def list_timezones() -> list[str]:
-    """All IANA timezone names, for the Settings-page picker."""
-    return pytz.common_timezones
+def list_timezones() -> list[dict]:
+    """All IANA timezone names plus their ISO country code, for the Settings-page
+    picker (e.g. so it can show "India" next to "Kolkata", Calendar-style)."""
+    zone_to_country = {
+        zone: cc for cc, zones in pytz.country_timezones.items() for zone in zones
+    }
+    # pytz.common_timezones is a lazily-built LazyList, not a plain list —
+    # FastAPI's response validation silently serializes it as empty, so cast it.
+    return [
+        {"zone": z, "country_code": zone_to_country.get(z)}
+        for z in list(pytz.common_timezones)
+    ]
 
 
 @router.get("/setup")
