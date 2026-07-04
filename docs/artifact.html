@@ -692,6 +692,73 @@ Talent · Keystone AI</div>
     </table>
   </div>
 
+  <div class="section">
+    <div class="eyebrow">Feature 07 · bug report from real use, awaiting sign-off</div>
+    <h2>Timezone picker — dropdown instead of an always-open list box</h2>
+    <p class="lede">Reported after running the live app: the current timezone control is an always-visible
+       multi-line list box sitting under a search input — it eats vertical space permanently and doesn't
+       read as "a setting you can change," it reads as a mini file browser. Requested behavior: a closed
+       control showing the current timezone, click to open a searchable dropdown, click a result to select
+       and close, back to showing just the selection. This is a live, working mock below — type to filter,
+       click a result.</p>
+
+    <div class="cols" style="margin-bottom:8px">
+      <div>
+        <h4>Before (current, live)</h4>
+        <div class="frame">
+          <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="path">mailflow.local — Settings</span></div>
+          <div style="padding:20px">
+            <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">Timezone</div>
+            <div style="border:1px solid var(--line2);border-radius:9px;padding:9px 12px;font-size:13.5px;color:#b7b1a7;margin-bottom:8px">Search e.g. New York, London, Kolkata…</div>
+            <div style="border:1px solid var(--line2);border-radius:9px;overflow:hidden">
+              <div style="background:#dfe3e8;padding:7px 12px;font-size:13px">Asia/Kolkata</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)">Asia/Kathmandu</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)">Asia/Karachi</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)">Asia/Dhaka</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)">Asia/Colombo</div>
+              <div style="padding:7px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);opacity:.4">⋮ (fixed 8-row box, always open)</div>
+            </div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Current selection: <b>Asia/Kolkata</b></div>
+          </div>
+        </div>
+        <div class="fact red" style="margin-top:10px">Always occupies ~230px of vertical space on the Settings page whether
+          you're changing it or not — reads as a permanent embedded list, not a dropdown control.</div>
+      </div>
+
+      <div>
+        <h4>After (proposed — try it, this is live)</h4>
+        <div class="frame">
+          <div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="path">mailflow.local — Settings</span></div>
+          <div style="padding:20px;min-height:280px">
+            <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">Timezone</div>
+            <div id="tzWrap" style="position:relative;max-width:340px">
+              <button id="tzTrigger" style="width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--line2);border-radius:9px;padding:10px 13px;font-size:13.5px;background:#fff;cursor:pointer">
+                <span id="tzTriggerLabel">Asia/Kolkata <span style="color:var(--muted);font-weight:400">(GMT+5:30)</span></span>
+                <span style="color:var(--muted);font-size:11px">▾</span>
+              </button>
+              <div id="tzDropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--line2);border-radius:10px;box-shadow:0 12px 32px -12px rgba(0,0,0,.25);z-index:10;overflow:hidden">
+                <div style="padding:8px">
+                  <input id="tzSearch" placeholder="Search e.g. New York, London, Kolkata…" style="width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 11px;font-size:13px;outline:none" />
+                </div>
+                <div id="tzList" style="max-height:220px;overflow-y:auto;border-top:1px solid var(--line)"></div>
+              </div>
+            </div>
+            <p style="font-size:11.5px;color:var(--muted);margin-top:8px">Click the field above to open the picker.</p>
+          </div>
+        </div>
+        <div class="fact green" style="margin-top:10px">Closed by default — shows only the current selection plus its UTC
+          offset. Click opens a search-filterable dropdown that overlays the page instead of pushing content down; picking
+          a result closes it immediately, same interaction as Google Calendar / Calendly's timezone control.</div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><b>Full IANA coverage kept</b><span>Same ~440-zone <code>pytz.common_timezones</code> list already served by the backend — this is purely an interaction change, not a data change.</span></div>
+      <div class="callout"><b>Shows the offset</b><span>"(GMT+5:30)" next to the zone name on both the trigger and each option — the thing people actually scan for, not just the city name.</span></div>
+      <div class="callout"><b>Closes on: pick, outside click, Escape</b><span>Standard dropdown dismissal — no dedicated close button needed.</span></div>
+    </div>
+  </div>
+
 </div>
 
 <footer>docs/artifact.html · UI/UX mockups, reviewed before implementation · updated 2026-07-03</footer>
@@ -706,6 +773,76 @@ Talent · Keystone AI</div>
     });
   });
   document.querySelector('.theme-btn[data-set="light"]')?.classList.add("active");
+
+  // ---- Feature 07 mock: real, working timezone dropdown ----
+  (function () {
+    const trigger = document.getElementById("tzTrigger");
+    if (!trigger) return; // section not present (shouldn't happen, guards anyway)
+    const wrap = document.getElementById("tzWrap");
+    const dropdown = document.getElementById("tzDropdown");
+    const search = document.getElementById("tzSearch");
+    const list = document.getElementById("tzList");
+    const triggerLabel = document.getElementById("tzTriggerLabel");
+
+    // Representative slice of pytz.common_timezones with a computed-looking offset
+    // label — enough to prove the interaction; the real build serves the full list.
+    const ZONES = [
+      ["Asia/Kolkata", "GMT+5:30"], ["Asia/Kathmandu", "GMT+5:45"],
+      ["Asia/Dhaka", "GMT+6:00"], ["Asia/Karachi", "GMT+5:00"],
+      ["Asia/Dubai", "GMT+4:00"], ["Asia/Singapore", "GMT+8:00"],
+      ["Asia/Tokyo", "GMT+9:00"], ["Asia/Shanghai", "GMT+8:00"],
+      ["Europe/London", "GMT+1:00"], ["Europe/Paris", "GMT+2:00"],
+      ["Europe/Berlin", "GMT+2:00"], ["Europe/Moscow", "GMT+3:00"],
+      ["America/New_York", "GMT-4:00"], ["America/Chicago", "GMT-5:00"],
+      ["America/Denver", "GMT-6:00"], ["America/Los_Angeles", "GMT-7:00"],
+      ["America/Sao_Paulo", "GMT-3:00"], ["Africa/Cairo", "GMT+2:00"],
+      ["Africa/Johannesburg", "GMT+2:00"], ["Australia/Sydney", "GMT+10:00"],
+      ["Pacific/Auckland", "GMT+12:00"], ["UTC", "GMT+0:00"],
+    ];
+    let current = ["Asia/Kolkata", "GMT+5:30"];
+
+    function renderList(filter) {
+      const q = (filter || "").trim().toLowerCase();
+      const filtered = q ? ZONES.filter((z) => z[0].toLowerCase().includes(q)) : ZONES;
+      list.innerHTML = filtered.length
+        ? filtered.map(([name, off]) => `
+            <button data-zone="${name}" data-off="${off}"
+              style="width:100%;text-align:left;display:flex;justify-content:space-between;gap:8px;
+                     padding:8px 13px;font-size:13px;border:none;background:${name === current[0] ? "var(--blueSoft)" : "#fff"};
+                     color:${name === current[0] ? "var(--blue)" : "var(--ink)"};cursor:pointer;font-weight:${name === current[0] ? "700" : "400"}">
+              <span>${name.replace(/_/g, " ")}</span><span style="color:var(--muted);font-weight:400">${off}</span>
+            </button>`).join("")
+        : `<div style="padding:14px;font-size:12.5px;color:var(--muted);text-align:center">No matching timezone</div>`;
+    }
+
+    function open() {
+      dropdown.style.display = "block";
+      search.value = "";
+      renderList("");
+      setTimeout(() => search.focus(), 0);
+    }
+    function close() {
+      dropdown.style.display = "none";
+    }
+
+    trigger.addEventListener("click", () => {
+      dropdown.style.display === "block" ? close() : open();
+    });
+    search.addEventListener("input", (e) => renderList(e.target.value));
+    list.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-zone]");
+      if (!btn) return;
+      current = [btn.dataset.zone, btn.dataset.off];
+      triggerLabel.innerHTML = `${current[0]} <span style="color:var(--muted);font-weight:400">(${current[1]})</span>`;
+      close();
+    });
+    document.addEventListener("click", (e) => {
+      if (!wrap.contains(e.target)) close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
+    });
+  })();
 </script>
 
 </body>
