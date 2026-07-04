@@ -16,7 +16,13 @@ export default function Outreach({ refreshKey, onChange, stats }) {
       />
       {sub === "Approvals" && <Approvals refreshKey={refreshKey} onChange={onChange} />}
       {sub === "Scheduled" && (
-        <SendList title="Scheduled queue" status="approved" refreshKey={refreshKey} />
+        <SendList
+          title="Scheduled queue"
+          status="approved"
+          refreshKey={refreshKey}
+          onChange={onChange}
+          onEdited={() => setSub("Approvals")}
+        />
       )}
       {sub === "Sent" && (
         <SendList title="Sent log" status="sent" refreshKey={refreshKey} timeField="sent_at" />
