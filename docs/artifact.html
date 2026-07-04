@@ -733,7 +733,7 @@ Talent · Keystone AI</div>
             <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">Timezone</div>
             <div id="tzWrap" style="position:relative;max-width:340px">
               <button id="tzTrigger" style="width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--line2);border-radius:9px;padding:10px 13px;font-size:13.5px;background:#fff;cursor:pointer">
-                <span id="tzTriggerLabel">Asia/Kolkata <span style="color:var(--muted);font-weight:400">(GMT+5:30)</span></span>
+                <span id="tzTriggerLabel">Asia/Kolkata</span>
                 <span style="color:var(--muted);font-size:11px">▾</span>
               </button>
               <div id="tzDropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--line2);border-radius:10px;box-shadow:0 12px 32px -12px rgba(0,0,0,.25);z-index:10;overflow:hidden">
@@ -754,7 +754,7 @@ Talent · Keystone AI</div>
 
     <div class="callouts">
       <div class="callout"><b>Full IANA coverage kept</b><span>Same ~440-zone <code>pytz.common_timezones</code> list already served by the backend — this is purely an interaction change, not a data change.</span></div>
-      <div class="callout"><b>Shows the offset</b><span>"(GMT+5:30)" next to the zone name on both the trigger and each option — the thing people actually scan for, not just the city name.</span></div>
+      <div class="callout"><b>City, live time, offset — Google Calendar's row shape</b><span>Each row shows the zone's current local time plus its GMT offset, right-aligned in muted tabular numerals, same layout Google Calendar and Calendly use — genuinely computed live, not a hardcoded label that goes stale across DST changes.</span></div>
       <div class="callout"><b>Closes on: pick, outside click, Escape</b><span>Standard dropdown dismissal — no dedicated close button needed.</span></div>
     </div>
   </div>
@@ -784,34 +784,68 @@ Talent · Keystone AI</div>
     const list = document.getElementById("tzList");
     const triggerLabel = document.getElementById("tzTriggerLabel");
 
-    // Representative slice of pytz.common_timezones with a computed-looking offset
-    // label — enough to prove the interaction; the real build serves the full list.
-    const ZONES = [
-      ["Asia/Kolkata", "GMT+5:30"], ["Asia/Kathmandu", "GMT+5:45"],
-      ["Asia/Dhaka", "GMT+6:00"], ["Asia/Karachi", "GMT+5:00"],
-      ["Asia/Dubai", "GMT+4:00"], ["Asia/Singapore", "GMT+8:00"],
-      ["Asia/Tokyo", "GMT+9:00"], ["Asia/Shanghai", "GMT+8:00"],
-      ["Europe/London", "GMT+1:00"], ["Europe/Paris", "GMT+2:00"],
-      ["Europe/Berlin", "GMT+2:00"], ["Europe/Moscow", "GMT+3:00"],
-      ["America/New_York", "GMT-4:00"], ["America/Chicago", "GMT-5:00"],
-      ["America/Denver", "GMT-6:00"], ["America/Los_Angeles", "GMT-7:00"],
-      ["America/Sao_Paulo", "GMT-3:00"], ["Africa/Cairo", "GMT+2:00"],
-      ["Africa/Johannesburg", "GMT+2:00"], ["Australia/Sydney", "GMT+10:00"],
-      ["Pacific/Auckland", "GMT+12:00"], ["UTC", "GMT+0:00"],
+    // Representative slice of real pytz.common_timezones IANA identifiers — the
+    // real build serves the full ~440-zone list; these are enough to prove the
+    // interaction. Offset + current time are COMPUTED live below, Google-Calendar-
+    // style, never a hardcoded label that could go stale (e.g. across DST changes).
+    const ZONE_NAMES = [
+      "Asia/Kolkata", "Asia/Kathmandu", "Asia/Dhaka", "Asia/Karachi", "Asia/Dubai",
+      "Asia/Singapore", "Asia/Tokyo", "Asia/Shanghai", "Asia/Seoul", "Asia/Jakarta",
+      "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Madrid", "Europe/Moscow",
+      "Europe/Istanbul", "America/New_York", "America/Chicago", "America/Denver",
+      "America/Los_Angeles", "America/Sao_Paulo", "America/Mexico_City", "America/Toronto",
+      "Africa/Cairo", "Africa/Johannesburg", "Africa/Lagos", "Australia/Sydney",
+      "Australia/Perth", "Pacific/Auckland", "UTC",
     ];
-    let current = ["Asia/Kolkata", "GMT+5:30"];
+
+    function zoneInfo(name) {
+      const now = new Date();
+      const time = new Intl.DateTimeFormat("en-US", {
+        timeZone: name, hour: "numeric", minute: "2-digit", hour12: true,
+      }).format(now);
+      // derive the UTC offset by diffing a formatted local wall-clock against UTC
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: name, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit",
+      }).formatToParts(now).reduce((a, p) => ((a[p.type] = p.value), a), {});
+      const asUTC = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute);
+      const offsetMin = Math.round((asUTC - Date.UTC(
+        now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+        now.getUTCHours(), now.getUTCMinutes()
+      )) / 60000);
+      const sign = offsetMin >= 0 ? "+" : "-";
+      const abs = Math.abs(offsetMin);
+      const off = `GMT${sign}${Math.floor(abs / 60)}${abs % 60 ? ":" + String(abs % 60).padStart(2, "0") : ""}`;
+      return { time, off };
+    }
+
+    let current = "Asia/Kolkata";
+
+    function labelFor(name) {
+      const { time, off } = zoneInfo(name);
+      return `${name.replace(/_/g, " ")} <span style="color:var(--muted);font-weight:400">— ${time} (${off})</span>`;
+    }
 
     function renderList(filter) {
       const q = (filter || "").trim().toLowerCase();
-      const filtered = q ? ZONES.filter((z) => z[0].toLowerCase().includes(q)) : ZONES;
+      // match against both "america/new_york" and "america/new york" so a search
+      // with a plain space (how people actually type a city name) still finds it
+      const filtered = q
+        ? ZONE_NAMES.filter((z) => z.toLowerCase().includes(q) || z.toLowerCase().replace(/_/g, " ").includes(q))
+        : ZONE_NAMES;
       list.innerHTML = filtered.length
-        ? filtered.map(([name, off]) => `
-            <button data-zone="${name}" data-off="${off}"
-              style="width:100%;text-align:left;display:flex;justify-content:space-between;gap:8px;
-                     padding:8px 13px;font-size:13px;border:none;background:${name === current[0] ? "var(--blueSoft)" : "#fff"};
-                     color:${name === current[0] ? "var(--blue)" : "var(--ink)"};cursor:pointer;font-weight:${name === current[0] ? "700" : "400"}">
-              <span>${name.replace(/_/g, " ")}</span><span style="color:var(--muted);font-weight:400">${off}</span>
-            </button>`).join("")
+        ? filtered.map((name) => {
+            const { time, off } = zoneInfo(name);
+            const selected = name === current;
+            return `
+            <button data-zone="${name}"
+              style="width:100%;text-align:left;display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+                     padding:9px 14px;font-size:13.5px;border:none;background:${selected ? "var(--blueSoft)" : "#fff"};
+                     color:${selected ? "var(--blue)" : "var(--ink)"};cursor:pointer;font-weight:${selected ? "700" : "400"}">
+              <span>${name.replace(/_/g, " ")}</span>
+              <span style="color:${selected ? "var(--blue)" : "var(--muted)"};font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:12.5px">${time} · ${off}</span>
+            </button>`;
+          }).join("")
         : `<div style="padding:14px;font-size:12.5px;color:var(--muted);text-align:center">No matching timezone</div>`;
     }
 
@@ -821,6 +855,7 @@ Talent · Keystone AI</div>
       renderList("");
       setTimeout(() => search.focus(), 0);
     }
+    triggerLabel.innerHTML = labelFor(current); // set the initial closed-state label live, on load
     function close() {
       dropdown.style.display = "none";
     }
@@ -832,8 +867,8 @@ Talent · Keystone AI</div>
     list.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-zone]");
       if (!btn) return;
-      current = [btn.dataset.zone, btn.dataset.off];
-      triggerLabel.innerHTML = `${current[0]} <span style="color:var(--muted);font-weight:400">(${current[1]})</span>`;
+      current = btn.dataset.zone;
+      triggerLabel.innerHTML = labelFor(current);
       close();
     });
     document.addEventListener("click", (e) => {
